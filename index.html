@@ -23,7 +23,6 @@ overflow:hidden;
 position:relative;
 }
 
-/* SKYLINE */
 .skyline{
 position:absolute;
 bottom:0;
@@ -39,23 +38,6 @@ animation:move 25s linear infinite;
 100%{transform:translateX(-50%);}
 }
 
-/* PARTICLES */
-.particle{
-position:absolute;
-width:5px;
-height:5px;
-background:#38bdf8;
-border-radius:50%;
-opacity:0.6;
-animation:float 10s linear infinite;
-}
-
-@keyframes float{
-0%{transform:translateY(100vh);}
-100%{transform:translateY(-100vh);}
-}
-
-/* GAME */
 #game{
 position:relative;
 z-index:2;
@@ -68,13 +50,10 @@ text-align:center;
 border:1px solid #334155;
 }
 
-/* TITLE */
 h1{
 color:#38bdf8;
-font-size:40px;
 }
 
-/* GUIDE */
 #avatar{
 background:#111827;
 padding:12px;
@@ -83,18 +62,6 @@ margin-bottom:15px;
 border:1px solid #334155;
 }
 
-/* TEXT */
-#level,#xp,#badge,#map{
-margin:8px;
-}
-
-/* QUESTION */
-#question{
-font-size:24px;
-margin:20px 0;
-}
-
-/* OPTIONS */
 .option{
 display:block;
 width:100%;
@@ -104,7 +71,6 @@ background:#1e293b;
 border:none;
 border-radius:12px;
 color:white;
-font-size:16px;
 cursor:pointer;
 }
 
@@ -112,11 +78,9 @@ cursor:pointer;
 background:#2563eb;
 }
 
-/* RESULT */
 #result{
 margin-top:10px;
-font-size:20px;
-height:30px;
+font-size:18px;
 }
 
 </style>
@@ -127,26 +91,16 @@ height:30px;
 
 <div class="skyline"></div>
 
-<!-- particles -->
-<div class="particle" style="left:10%"></div>
-<div class="particle" style="left:30%"></div>
-<div class="particle" style="left:50%"></div>
-<div class="particle" style="left:70%"></div>
-<div class="particle" style="left:90%"></div>
-
 <div id="game">
 
 <h1>🎮 SeoulQuest AI</h1>
 
 <div id="avatar">
-🤖 <b>Riya AI Guide:</b><br>
-Welcome to your AI Korean adventure 🇰🇷
+🤖 Riya Guide: Learn Korean & Explore Seoul 🇰🇷
 </div>
 
-<div id="map">📍 Seoul Station</div>
-<div id="level">Level 1</div>
-<div id="xp">XP: 0</div>
-<div id="badge">🏅 Beginner</div>
+<div id="level"></div>
+<div id="xp"></div>
 
 <div id="question"></div>
 <div id="options"></div>
@@ -156,7 +110,7 @@ Welcome to your AI Korean adventure 🇰🇷
 
 <script>
 
-/* INSTALL PWA */
+/* PWA */
 if('serviceWorker' in navigator){
 navigator.serviceWorker.register('sw.js');
 }
@@ -165,40 +119,43 @@ navigator.serviceWorker.register('sw.js');
 let xp = 0;
 let level = 1;
 let index = 0;
+let bossMode = false;
 
-/* 50+ QUESTIONS SYSTEM */
+/* QUESTIONS */
 const levels = {
-
 1:[
-{q:"Hello in Korean?",o:["안녕하세요","사랑","물","책"],a:"안녕하세요"},
-{q:"Thank you?",o:["감사합니다","학교","버스","의자"],a:"감사합니다"},
-{q:"Goodbye?",o:["안녕","고양이","강","달"],a:"안녕"},
-{q:"Love?",o:["사랑","물","책","차"],a:"사랑"},
-{q:"Friend?",o:["친구","의자","버스","강"],a:"친구"}
+{q:"Hello?",o:["안녕하세요","사랑","물","책"],a:"안녕하세요"},
+{q:"Thank you?",o:["감사합니다","학교","버스","의자"],a:"감사합니다"}
 ],
-
 2:[
 {q:"School?",o:["학교","강","달","불"],a:"학교"},
-{q:"Teacher?",o:["선생님","학생","강아지","책"],a:"선생님"},
-{q:"Student?",o:["학생","고양이","버스","사과"],a:"학생"},
-{q:"Book?",o:["책","물","차","불"],a:"책"},
-{q:"Coffee?",o:["커피","우유","달","강"],a:"커피"}
+{q:"Friend?",o:["친구","고양이","버스","강"],a:"친구"}
 ],
-
 3:[
 {q:"Water?",o:["물","밥","차","불"],a:"물"},
-{q:"Rice?",o:["밥","책","강","달"],a:"밥"},
-{q:"Milk?",o:["우유","버스","강","책"],a:"우유"},
-{q:"Bus?",o:["버스","기차","비행기","배"],a:"버스"},
-{q:"Train?",o:["기차","버스","차","달"],a:"기차"}
+{q:"Love?",o:["사랑","책","버스","강"],a:"사랑"}
 ]
-
 };
+
+/* BOSS */
+const bossQuestions = [
+{
+q:"🔥 Boss: I want to go to Seoul",
+o:["서울 가고 싶어요","학교 갑니다","물 주세요","친구 없어요"],
+a:"서울 가고 싶어요"
+}
+];
 
 /* LOAD */
 function load(){
 
-let q = levels[level][index];
+let q;
+
+if(bossMode){
+q = bossQuestions[0];
+}else{
+q = levels[level][index];
+}
 
 document.getElementById("question").innerText = q.q;
 
@@ -210,16 +167,34 @@ html += `<button class="option" onclick="check('${op}')">${op}</button>`;
 
 document.getElementById("options").innerHTML = html;
 
+updateUI();
+
 }
 
 /* CHECK */
 function check(ans){
 
-let q = levels[level][index];
+let q = bossMode ? bossQuestions[0] : levels[level][index];
 
 if(ans === q.a){
-xp += 10;
-document.getElementById("result").innerText = "✅ Correct +10 XP";
+
+xp += bossMode ? 30 : 10;
+
+document.getElementById("result").innerText =
+bossMode ? "🔥 BOSS DEFEATED +30 XP" : "✅ Correct";
+
+speak(q.a);
+
+/* boss exit */
+if(bossMode){
+bossMode = false;
+}
+
+/* trigger boss */
+if(index === 1){
+bossMode = true;
+}
+
 }else{
 document.getElementById("result").innerText = "❌ Wrong";
 }
@@ -231,28 +206,37 @@ index = 0;
 level++;
 }
 
-update();
 load();
 
 }
 
-/* UPDATE UI */
-function update(){
+/* UI */
+function updateUI(){
 
-document.getElementById("xp").innerText = "XP: " + xp;
 document.getElementById("level").innerText = "Level: " + level;
-
-let badge = "🏅 Beginner";
-if(level >= 3) badge = "🥈 Explorer";
-if(level >= 5) badge = "🥇 Master";
-
-document.getElementById("badge").innerText = badge;
+document.getElementById("xp").innerText = "XP: " + xp;
 
 }
 
-update();
+/* VOICE */
+function speak(text){
+
+let msg = new SpeechSynthesisUtterance(text);
+msg.lang = "ko-KR";
+msg.rate = 0.8;
+speechSynthesis.speak(msg);
+
+}
+
 load();
 
+</script>
+
+<!-- PWA CONNECT -->
+<script>
+if ('serviceWorker' in navigator) {
+navigator.serviceWorker.register('sw.js');
+}
 </script>
 
 </body>
