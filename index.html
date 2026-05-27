@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SeoulQuest AI PRO</title>
+<title>SeoulQuest AI</title>
 
 <style>
 
+/* ===== BACKGROUND ===== */
 body{
 margin:0;
 font-family:Arial,sans-serif;
@@ -20,6 +21,7 @@ height:100vh;
 overflow:hidden;
 }
 
+/* ===== GAME BOX ===== */
 .game{
 width:92%;
 max-width:800px;
@@ -28,41 +30,82 @@ padding:20px;
 border-radius:20px;
 text-align:center;
 border:1px solid #334155;
+animation:fadeIn 1s ease;
 }
 
+@keyframes fadeIn{
+from{opacity:0; transform:scale(0.9);}
+to{opacity:1; transform:scale(1);}
+}
+
+/* ===== TITLE ===== */
 h1{color:#38bdf8;}
 
-.btn{
-display:block;
-width:100%;
-margin:10px 0;
+/* ===== AVATAR ===== */
+#avatar{
+background:#111827;
 padding:12px;
-background:#1e293b;
-border:none;
-color:white;
-border-radius:10px;
-cursor:pointer;
+border-radius:15px;
+margin-bottom:15px;
+border:1px solid #334155;
+transition:0.3s;
 }
 
-.btn:hover{background:#2563eb;}
-
-.topbar{
+/* ===== TOP BAR ===== */
+.top{
 display:flex;
 justify-content:space-between;
+margin-bottom:10px;
 font-size:14px;
+}
+
+/* ===== XP BAR ===== */
+.bar{
+width:100%;
+height:10px;
+background:#1e293b;
+border-radius:10px;
+overflow:hidden;
 margin-bottom:10px;
 }
 
-.map{
-margin:10px 0;
-padding:8px;
-background:#111827;
-border-radius:10px;
+.fill{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+transition:0.3s;
 }
 
-.boss{
-color:#ff3b3b;
-font-weight:bold;
+/* ===== QUESTION ===== */
+.q{
+font-size:20px;
+margin:15px 0;
+transition:0.3s;
+}
+
+/* ===== BUTTONS ===== */
+.btn{
+display:block;
+width:100%;
+padding:12px;
+margin:8px 0;
+border:none;
+border-radius:10px;
+background:#1e293b;
+color:white;
+cursor:pointer;
+transition:0.2s;
+}
+
+.btn:hover{
+background:#2563eb;
+transform:scale(1.03);
+}
+
+/* ===== RESULT ===== */
+#result{
+min-height:25px;
+margin-top:10px;
 }
 
 </style>
@@ -72,64 +115,61 @@ font-weight:bold;
 
 <div class="game">
 
-<h1>🎮 SeoulQuest AI PRO</h1>
+<h1>🎮 SeoulQuest AI</h1>
 
-<div class="topbar">
+<div id="avatar">🤖 Riya Guide: Learn Korean 🇰🇷</div>
+
+<div class="top">
 <div>XP: <span id="xp">0</span></div>
 <div>Level: <span id="level">1</span></div>
-<div>Stage: <span id="stage">Station</span></div>
+<div>Energy: <span id="energy">100</span></div>
 </div>
 
-<div class="map" id="map">📍 Seoul Station Zone</div>
+<div class="bar">
+<div class="fill" id="bar"></div>
+</div>
 
-<div id="question"></div>
+<div class="q" id="question"></div>
 
 <div id="options"></div>
 
 <div id="result"></div>
 
-<div style="margin-top:10px;">
-<button class="btn" onclick="toggleMusic()">🎵 Music ON/OFF</button>
-</div>
-
 </div>
 
 <script>
 
-/* ================= MUSIC ================= */
-let music = false;
+/* ===== GAME DATA ===== */
+let xp = 0;
+let energy = 100;
+let combo = 0;
+let currentAnswer = "";
 
-function toggleMusic(){
-music = !music;
-alert(music ? "Music ON (add mp3 later)" : "Music OFF");
+/* ===== RIYA AVATAR ===== */
+function avatar(type){
+
+let av = document.getElementById("avatar");
+
+if(type==="correct"){
+av.innerHTML="🤖 Riya: Excellent! ⭐";
+}else if(type==="wrong"){
+av.innerHTML="🤖 Riya: Try again 💡";
+}else{
+av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
 }
 
-/* ================= SAVE ================= */
-let xp = localStorage.getItem("xp") || 0;
-xp = parseInt(xp);
+setTimeout(()=>{
+av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
+},1200);
 
-let level = Math.floor(xp/50)+1;
-
-/* ================= BOSSES ================= */
-const bosses = [
-"🔥 Boss 1: Seoul Guard",
-"🔥 Boss 2: Language Demon",
-"🔥 Final Boss: King of Seoul"
-];
-
-/* ================= MAP ================= */
-function updateMap(){
-if(level < 3) document.getElementById("stage").innerText = "Station";
-else if(level < 6) document.getElementById("stage").innerText = "City";
-else document.getElementById("stage").innerText = "Palace";
 }
 
-/* ================= AI QUESTIONS ================= */
-function gen(){
-
-const words = [
+/* ===== 50+ WORDS ===== */
+function words(){
+return [
 ["Hello","안녕하세요"],
 ["Thank you","감사합니다"],
+["Sorry","죄송합니다"],
 ["Friend","친구"],
 ["Love","사랑"],
 ["School","학교"],
@@ -143,70 +183,144 @@ const words = [
 ["Seoul","서울"],
 ["Game","게임"],
 ["Study","공부"],
-["Music","음악"]
+["Music","음악"],
+["Movie","영화"],
+["Night","밤"],
+["Day","하루"],
+["Time","시간"],
+["Teacher","선생님"],
+["Student","학생"],
+["Coffee","커피"],
+["Dog","개"],
+["Cat","고양이"],
+["Phone","전화"],
+["Computer","컴퓨터"],
+["Internet","인터넷"],
+["Weather","날씨"],
+["Hot","더워"],
+["Cold","추워"],
+["Happy","행복"],
+["Sad","슬픈"],
+["Fast","빠른"],
+["Slow","느린"],
+["Red","빨간색"],
+["Blue","파란색"],
+["Green","초록색"],
+["White","흰색"],
+["Black","검은색"],
+["Car","자동차"],
+["Airplane","비행기"],
+["Airport","공항"],
+["House","집"],
+["Market","시장"],
+["Street","거리"],
+["Walk","걷다"],
+["Run","달리다"]
 ];
+}
 
-let w = words[Math.floor(Math.random()*words.length)];
+/* ===== GENERATE QUESTION ===== */
+function gen(){
 
-let wrong = words
-.filter(x=>x[1]!=w[1])
+let w = words();
+
+let item = w[Math.floor(Math.random()*w.length)];
+
+let wrong = w.filter(x=>x[1]!=item[1])
 .sort(()=>Math.random()-0.5)
 .slice(0,3)
 .map(x=>x[1]);
 
-let options = [...wrong,w[1]]
+let options = [...wrong,item[1]]
 .sort(()=>Math.random()-0.5);
 
-return {q:`What is "${w[0]}" in Korean?`,o:options,a:w[1]};
+return {
+q:`What is "${item[0]}" in Korean?`,
+o:options,
+a:item[1]
+};
+
 }
 
-/* ================= GAME ================= */
-let current;
-
+/* ===== LOAD ===== */
 function load(){
 
-current = gen();
+let q = gen();
+currentAnswer = q.a;
 
-document.getElementById("question").innerText = current.q;
+document.getElementById("question").innerText=q.q;
 
 let html="";
 
-current.o.forEach(op=>{
+q.o.forEach(op=>{
 html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
 document.getElementById("options").innerHTML=html;
 
-document.getElementById("xp").innerText=xp;
-document.getElementById("level").innerText=Math.floor(xp/50)+1;
-
-updateMap();
-
 }
 
-/* ================= CHECK ================= */
+/* ===== CHECK ===== */
 function check(ans){
 
-if(ans===current.a){
+if(ans===currentAnswer){
 
 xp+=10;
-localStorage.setItem("xp",xp);
+combo++;
 
-document.getElementById("result").innerText="✅ Correct +10 XP";
+document.getElementById("result").innerText=
+"✅ Correct +10 XP | Combo: "+combo;
 
-if(xp%100===0){
-alert(bosses[Math.floor(xp/100)%3]);
+avatar("correct");
+
+/* combo bonus */
+if(combo%3===0){
+xp+=20;
+document.getElementById("result").innerText+=" 🔥 COMBO BONUS!";
 }
 
 }else{
-document.getElementById("result").innerText="❌ Wrong";
+
+combo=0;
+energy-=15;
+
+document.getElementById("result").innerText=
+"❌ Wrong | Energy: "+energy;
+
+avatar("wrong");
+
 }
 
+/* GAME OVER */
+if(energy<=0){
+alert("💀 Game Over Restarting");
+xp=0;
+energy=100;
+combo=0;
+}
+
+/* UPDATE */
+update();
 load();
 
 }
 
+/* ===== UI ===== */
+function update(){
+
+document.getElementById("xp").innerText=xp;
+document.getElementById("level").innerText=Math.floor(xp/50)+1;
+document.getElementById("energy").innerText=energy;
+
+/* XP BAR */
+let bar=(xp%50)*2;
+document.getElementById("bar").style.width=bar+"%";
+
+}
+
+/* START */
 load();
+update();
 
 </script>
 
