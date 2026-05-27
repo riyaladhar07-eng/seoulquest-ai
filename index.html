@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI</title>
+<title>SeoulQuest AI Ultimate</title>
 
 <style>
 
@@ -18,9 +17,36 @@ justify-content:center;
 align-items:center;
 height:100vh;
 overflow:hidden;
+position:relative;
 }
 
-/* CYBERPUNK GLOW */
+/* ANIMATED PARTICLES */
+
+.particle{
+position:absolute;
+width:6px;
+height:6px;
+background:#38bdf8;
+border-radius:50%;
+opacity:0.5;
+animation:float 10s linear infinite;
+}
+
+@keyframes float{
+0%{
+transform:translateY(100vh) translateX(0);
+opacity:0;
+}
+50%{
+opacity:0.6;
+}
+100%{
+transform:translateY(-100vh) translateX(100px);
+opacity:0;
+}
+}
+
+/* GLOW EFFECTS */
 
 body::before{
 content:"";
@@ -29,9 +55,9 @@ width:600px;
 height:600px;
 background:#38bdf8;
 filter:blur(180px);
-opacity:0.15;
-top:-100px;
-left:-100px;
+opacity:0.12;
+top:-150px;
+left:-150px;
 }
 
 body::after{
@@ -41,9 +67,9 @@ width:500px;
 height:500px;
 background:#f472b6;
 filter:blur(180px);
-opacity:0.12;
-bottom:-100px;
-right:-100px;
+opacity:0.1;
+bottom:-150px;
+right:-150px;
 }
 
 /* GAME */
@@ -52,13 +78,14 @@ right:-100px;
 position:relative;
 z-index:2;
 width:92%;
-max-width:750px;
-background:rgba(17,24,39,0.95);
+max-width:760px;
+background:rgba(15,23,42,0.92);
 padding:25px;
-border-radius:25px;
+border-radius:28px;
 border:1px solid #334155;
-box-shadow:0 0 40px rgba(56,189,248,0.3);
+box-shadow:0 0 40px rgba(56,189,248,0.25);
 text-align:center;
+backdrop-filter:blur(10px);
 }
 
 /* TITLE */
@@ -66,8 +93,20 @@ text-align:center;
 h1{
 font-size:42px;
 color:#38bdf8;
+text-shadow:0 0 18px #38bdf8;
 margin-bottom:10px;
-text-shadow:0 0 15px #38bdf8;
+}
+
+/* AVATAR */
+
+#avatar{
+background:#111827;
+padding:15px;
+border-radius:18px;
+margin-bottom:20px;
+border:1px solid #334155;
+font-size:16px;
+line-height:1.6;
 }
 
 /* LEVEL */
@@ -82,7 +121,15 @@ margin-bottom:10px;
 
 #xp{
 font-size:18px;
+margin-bottom:10px;
+}
+
+/* BADGE */
+
+#badge{
+font-size:18px;
 margin-bottom:15px;
+color:#facc15;
 }
 
 /* MAP */
@@ -90,7 +137,7 @@ margin-bottom:15px;
 #map{
 margin-bottom:15px;
 font-size:18px;
-color:#facc15;
+color:#38bdf8;
 }
 
 /* PROGRESS */
@@ -152,7 +199,7 @@ font-weight:bold;
 margin-top:15px;
 }
 
-/* NEXT BUTTON */
+/* BUTTON */
 
 #nextBtn{
 margin-top:20px;
@@ -171,7 +218,7 @@ display:none;
 transform:scale(1.05);
 }
 
-/* ANIMATIONS */
+/* ANIMATION */
 
 .correct{
 color:#22c55e;
@@ -201,15 +248,31 @@ animation:shake 0.4s ease;
 
 <body>
 
+<!-- PARTICLES -->
+
+<div class="particle" style="left:10%; animation-delay:0s;"></div>
+<div class="particle" style="left:25%; animation-delay:2s;"></div>
+<div class="particle" style="left:40%; animation-delay:4s;"></div>
+<div class="particle" style="left:60%; animation-delay:1s;"></div>
+<div class="particle" style="left:75%; animation-delay:3s;"></div>
+<div class="particle" style="left:90%; animation-delay:5s;"></div>
+
 <div id="game">
 
 <h1>🎮 SeoulQuest AI</h1>
+
+<div id="avatar">
+🤖 <b>Minji AI Guide:</b><br>
+Welcome back, explorer! Learn Korean and conquer Seoul 🚀
+</div>
 
 <div id="map">📍 Seoul Station District</div>
 
 <div id="level">Level 1</div>
 
 <div id="xp">XP: 0</div>
+
+<div id="badge">🏅 Beginner Explorer</div>
 
 <div id="progressContainer">
 <div id="progressBar"></div>
@@ -223,20 +286,18 @@ animation:shake 0.4s ease;
 
 <button id="nextBtn" onclick="nextQuestion()">Next ➜</button>
 
-<audio id="correctSound">
-<source src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3">
-</audio>
-
-<audio id="wrongSound">
-<source src="https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3">
-</audio>
-
 </div>
 
 <script>
 
-let xp = 0;
-let level = 1;
+let xp = localStorage.getItem("xp")
+? parseInt(localStorage.getItem("xp"))
+: 0;
+
+let level = localStorage.getItem("level")
+? parseInt(localStorage.getItem("level"))
+: 1;
+
 let currentQuestion = 0;
 
 const questions = [
@@ -254,12 +315,6 @@ answer:"감사합니다"
 },
 
 {
-question:"What is 'Book' in Korean?",
-options:["책","강","산","커피"],
-answer:"책"
-},
-
-{
 question:"What is 'Love' in Korean?",
 options:["달","해","사랑","자동차"],
 answer:"사랑"
@@ -272,96 +327,66 @@ answer:"친구"
 },
 
 {
-question:"What is 'School' in Korean?",
-options:["사과","강아지","학교","기차"],
-answer:"학교"
-},
-
-{
-question:"What is 'Rice/Food' in Korean?",
-options:["물","밥","우유","차"],
-answer:"밥"
-},
-
-{
 question:"What is 'Water' in Korean?",
-options:["물","커피","고기","눈"],
+options:["물","커피","우유","차"],
 answer:"물"
 },
 
 {
-question:"What is 'Teacher' in Korean?",
-options:["학생","선생님","친구","형제"],
-answer:"선생님"
-},
-
-{
-question:"What is 'Student' in Korean?",
-options:["선생님","학생","아기","가족"],
-answer:"학생"
-},
-
-{
-question:"What is 'Dog' in Korean?",
-options:["강아지","고양이","새","물고기"],
-answer:"강아지"
-},
-
-{
-question:"What is 'Cat' in Korean?",
-options:["강아지","호랑이","고양이","사자"],
-answer:"고양이"
-},
-
-{
-question:"What is 'Coffee' in Korean?",
-options:["차","우유","커피","물"],
-answer:"커피"
-},
-
-{
-question:"What is 'Milk' in Korean?",
-options:["커피","우유","밥","사과"],
-answer:"우유"
-},
-
-{
-question:"What is 'Apple' in Korean?",
-options:["사과","바나나","포도","딸기"],
-answer:"사과"
-},
-
-{
-question:"What is 'Banana' in Korean?",
-options:["사과","딸기","바나나","포도"],
-answer:"바나나"
-},
-
-{
-question:"What is 'Train' in Korean?",
-options:["자동차","버스","기차","비행기"],
-answer:"기차"
-},
-
-{
-question:"What is 'Bus' in Korean?",
-options:["버스","기차","배","자동차"],
-answer:"버스"
-},
-
-{
-question:"What is 'Computer' in Korean?",
-options:["전화기","컴퓨터","게임","인터넷"],
-answer:"컴퓨터"
-},
-
-{
-question:"What is 'Music' in Korean?",
-options:["영화","게임","음악","사진"],
-answer:"음악"
+question:"What is 'School' in Korean?",
+options:["사과","학교","기차","자동차"],
+answer:"학교"
 }
 
 ];
+
+function updateUI(){
+
+document.getElementById("xp").innerHTML =
+"XP: " + xp;
+
+document.getElementById("level").innerHTML =
+"Level " + level;
+
+let progress = xp % 100;
+
+document.getElementById("progressBar").style.width =
+progress + "%";
+
+/* BADGES */
+
+let badge = "🏅 Beginner Explorer";
+
+if(level >= 3){
+badge = "🥈 Seoul Challenger";
+}
+
+if(level >= 5){
+badge = "🥇 Korean Master";
+}
+
+if(level >= 8){
+badge = "👑 Seoul Legend";
+}
+
+document.getElementById("badge").innerHTML = badge;
+
+/* MAPS */
+
+let maps = [
+"📍 Seoul Station District",
+"🌆 Gangnam Neon City",
+"🎓 Korea University Zone",
+"🛍️ Myeongdong Market",
+"🌃 Han River Night Route"
+];
+
+document.getElementById("map").innerHTML =
+maps[(level - 1) % maps.length];
+
+}
+
+/* LOAD QUESTION */
 
 function loadQuestion(){
 
@@ -370,23 +395,28 @@ document.getElementById("nextBtn").style.display = "none";
 
 let q = questions[currentQuestion];
 
-document.getElementById("question").innerHTML = q.question;
+document.getElementById("question").innerHTML =
+q.question;
 
 let optionsHTML = "";
 
 q.options.forEach(option => {
 
 optionsHTML += `
-<button class="option" onclick="checkAnswer('${option}')">
+<button class="option"
+onclick="checkAnswer('${option}')">
 ${option}
 </button>
 `;
 
 });
 
-document.getElementById("options").innerHTML = optionsHTML;
+document.getElementById("options").innerHTML =
+optionsHTML;
 
 }
+
+/* CHECK ANSWER */
 
 function checkAnswer(selected){
 
@@ -396,47 +426,41 @@ if(selected === correctAnswer){
 
 xp += 10;
 
-document.getElementById("correctSound").play();
-
 document.getElementById("result").innerHTML =
 "✅ Correct! +10 XP";
 
-document.getElementById("result").className = "correct";
+document.getElementById("result").className =
+"correct";
 
 }else{
-
-document.getElementById("wrongSound").play();
 
 document.getElementById("result").innerHTML =
 "❌ Wrong Answer";
 
-document.getElementById("result").className = "wrong";
+document.getElementById("result").className =
+"wrong";
 
 }
 
-document.getElementById("xp").innerHTML =
-"XP: " + xp;
-
-let progress = (xp % 100);
-
-document.getElementById("progressBar").style.width =
-progress + "%";
+/* LEVEL UP */
 
 if(xp >= level * 50){
-
 level++;
-
-document.getElementById("level").innerHTML =
-"Level " + level;
-
-changeMap();
-
 }
+
+/* SAVE */
+
+localStorage.setItem("xp", xp);
+localStorage.setItem("level", level);
+
+updateUI();
 
 document.getElementById("nextBtn").style.display =
 "inline-block";
 
 }
+
+/* NEXT */
 
 function nextQuestion(){
 
@@ -450,23 +474,7 @@ loadQuestion();
 
 }
 
-function changeMap(){
-
-let maps = [
-"📍 Seoul Station District",
-"🌆 Gangnam Neon City",
-"🎓 Korea University Zone",
-"🛍️ Myeongdong Market",
-"🌃 Han River Night Route"
-];
-
-let mapIndex = (level - 1) % maps.length;
-
-document.getElementById("map").innerHTML =
-maps[mapIndex];
-
-}
-
+updateUI();
 loadQuestion();
 
 </script>
