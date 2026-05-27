@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI Ultimate</title>
+<title>SeoulQuest AI</title>
 
 <style>
 
@@ -21,242 +21,99 @@ position:relative;
 }
 
 /* SKYLINE */
-
 .skyline{
 position:absolute;
 bottom:0;
 width:200%;
-height:180px;
-background:url('https://i.imgur.com/Z8mJf6A.png') repeat-x;
-background-size:contain;
-opacity:0.18;
-animation:moveSkyline 30s linear infinite;
+height:160px;
+background:linear-gradient(to right,#1e293b,#0f172a);
+opacity:0.3;
+animation:move 25s linear infinite;
 }
 
-@keyframes moveSkyline{
-0%{
-transform:translateX(0);
-}
-100%{
-transform:translateX(-50%);
-}
+@keyframes move{
+0%{transform:translateX(0);}
+100%{transform:translateX(-50%);}
 }
 
 /* PARTICLES */
-
 .particle{
 position:absolute;
-width:6px;
-height:6px;
+width:5px;
+height:5px;
 background:#38bdf8;
 border-radius:50%;
-opacity:0.5;
+opacity:0.6;
 animation:float 10s linear infinite;
 }
 
 @keyframes float{
-0%{
-transform:translateY(100vh) translateX(0);
-opacity:0;
-}
-50%{
-opacity:0.6;
-}
-100%{
-transform:translateY(-100vh) translateX(100px);
-opacity:0;
-}
+0%{transform:translateY(100vh);}
+100%{transform:translateY(-100vh);}
 }
 
-/* GLOW */
-
-body::before{
-content:"";
-position:absolute;
-width:600px;
-height:600px;
-background:#38bdf8;
-filter:blur(180px);
-opacity:0.12;
-top:-150px;
-left:-150px;
-}
-
-body::after{
-content:"";
-position:absolute;
-width:500px;
-height:500px;
-background:#f472b6;
-filter:blur(180px);
-opacity:0.1;
-bottom:-150px;
-right:-150px;
-}
-
-/* GAME */
-
+/* GAME BOX */
 #game{
 position:relative;
 z-index:2;
-width:92%;
-max-width:760px;
-background:rgba(15,23,42,0.92);
+width:90%;
+max-width:750px;
+background:rgba(15,23,42,0.95);
 padding:25px;
-border-radius:28px;
-border:1px solid #334155;
-box-shadow:0 0 40px rgba(56,189,248,0.25);
+border-radius:25px;
 text-align:center;
-backdrop-filter:blur(10px);
+border:1px solid #334155;
 }
 
 /* TITLE */
-
 h1{
-font-size:42px;
 color:#38bdf8;
-text-shadow:0 0 18px #38bdf8;
-margin-bottom:10px;
+font-size:40px;
 }
 
 /* GUIDE */
-
 #avatar{
 background:#111827;
-padding:15px;
-border-radius:18px;
-margin-bottom:20px;
+padding:12px;
+border-radius:15px;
+margin-bottom:15px;
 border:1px solid #334155;
-font-size:16px;
-line-height:1.6;
 }
 
-/* LEVEL */
-
-#level{
-font-size:20px;
-color:#f472b6;
-margin-bottom:10px;
-}
-
-#xp{
-font-size:18px;
-margin-bottom:10px;
-}
-
-#badge{
-font-size:18px;
-margin-bottom:15px;
-color:#facc15;
-}
-
-#map{
-margin-bottom:15px;
-font-size:18px;
-color:#38bdf8;
-}
-
-/* PROGRESS */
-
-#progressContainer{
-width:100%;
-height:20px;
-background:#1e293b;
-border-radius:20px;
-overflow:hidden;
-margin-bottom:25px;
-}
-
-#progressBar{
-height:100%;
-width:0%;
-background:linear-gradient(to right,#38bdf8,#0ea5e9);
-transition:0.5s;
+/* TEXT */
+#level,#xp,#badge,#map{
+margin:8px;
 }
 
 /* QUESTION */
-
 #question{
-font-size:26px;
-margin-bottom:25px;
-line-height:1.5;
+font-size:24px;
+margin:20px 0;
 }
 
 /* OPTIONS */
-
 .option{
 display:block;
 width:100%;
-padding:15px;
-margin:12px 0;
-border:none;
-border-radius:16px;
-font-size:17px;
-font-weight:bold;
-cursor:pointer;
+padding:14px;
+margin:10px 0;
 background:#1e293b;
+border:none;
+border-radius:12px;
 color:white;
-transition:0.3s;
-border:1px solid #334155;
+font-size:16px;
+cursor:pointer;
 }
 
 .option:hover{
-transform:scale(1.03);
 background:#2563eb;
-box-shadow:0 0 20px rgba(37,99,235,0.5);
 }
 
 /* RESULT */
-
 #result{
-height:35px;
-font-size:22px;
-font-weight:bold;
-margin-top:15px;
-}
-
-/* BUTTON */
-
-#nextBtn{
-margin-top:20px;
-padding:14px 28px;
-border:none;
-border-radius:15px;
-background:linear-gradient(135deg,#38bdf8,#0ea5e9);
-color:white;
-font-size:17px;
-font-weight:bold;
-cursor:pointer;
-display:none;
-}
-
-#nextBtn:hover{
-transform:scale(1.05);
-}
-
-/* ANIMATION */
-
-.correct{
-color:#22c55e;
-animation:pop 0.4s ease;
-}
-
-.wrong{
-color:#ef4444;
-animation:shake 0.4s ease;
-}
-
-@keyframes pop{
-0%{transform:scale(0.8);}
-100%{transform:scale(1);}
-}
-
-@keyframes shake{
-0%{transform:translateX(-5px);}
-25%{transform:translateX(5px);}
-50%{transform:translateX(-5px);}
-75%{transform:translateX(5px);}
-100%{transform:translateX(0);}
+margin-top:10px;
+font-size:20px;
+height:30px;
 }
 
 </style>
@@ -266,236 +123,143 @@ animation:shake 0.4s ease;
 
 <div class="skyline"></div>
 
-<div class="particle" style="left:10%; animation-delay:0s;"></div>
-<div class="particle" style="left:25%; animation-delay:2s;"></div>
-<div class="particle" style="left:40%; animation-delay:4s;"></div>
-<div class="particle" style="left:60%; animation-delay:1s;"></div>
-<div class="particle" style="left:75%; animation-delay:3s;"></div>
-<div class="particle" style="left:90%; animation-delay:5s;"></div>
-
 <div id="game">
 
 <h1>🎮 SeoulQuest AI</h1>
 
 <div id="avatar">
 🤖 <b>Riya AI Guide:</b><br>
-Welcome back, explorer! Learn Korean and conquer Seoul 🚀
+Let’s learn Korean and explore Seoul 🇰🇷
 </div>
 
-<div id="map">📍 Seoul Station District</div>
-
+<div id="map">📍 Seoul Station</div>
 <div id="level">Level 1</div>
-
 <div id="xp">XP: 0</div>
-
-<div id="badge">🏅 Beginner Explorer</div>
-
-<div id="progressContainer">
-<div id="progressBar"></div>
-</div>
+<div id="badge">🏅 Beginner</div>
 
 <div id="question"></div>
-
 <div id="options"></div>
-
 <div id="result"></div>
-
-<button id="nextBtn" onclick="nextQuestion()">Next ➜</button>
 
 </div>
 
 <script>
 
-let xp = localStorage.getItem("xp")
-? parseInt(localStorage.getItem("xp"))
-: 0;
+/* XP + LEVEL */
+let xp = 0;
+let level = 1;
 
-let level = localStorage.getItem("level")
-? parseInt(localStorage.getItem("level"))
-: 1;
+/* LEVEL WISE QUESTIONS (FIXED ISSUE) */
+const levels = {
 
-let currentQuestion = 0;
+1:[
+{q:"What is Hello?",o:["안녕하세요","사랑","학교","물"],a:"안녕하세요"},
+{q:"What is Thank You?",o:["감사합니다","책","의자","달"],a:"감사합니다"}
+],
 
-/* SPEAK KOREAN */
+2:[
+{q:"What is School?",o:["학교","차","강","불"],a:"학교"},
+{q:"What is Friend?",o:["친구","바다","눈","산"],a:"친구"}
+],
 
-function speakKorean(text){
+3:[
+{q:"What is Water?",o:["물","사과","기차","버스"],a:"물"},
+{q:"What is Love?",o:["사랑","고양이","커피","의자"],a:"사랑"}
+]
 
-let speech = new SpeechSynthesisUtterance(text);
+};
 
-speech.lang = "ko-KR";
+let currentLevel = 1;
+let index = 0;
 
-speech.rate = 0.9;
+/* LOAD QUESTION */
+function load(){
 
-window.speechSynthesis.speak(speech);
+let q = levels[currentLevel][index];
 
-}
+document.getElementById("question").innerText = q.q;
 
-/* QUESTIONS */
+let html = "";
 
-const questions = [
-
-{
-question:"What is 'Hello' in Korean?",
-options:["감사합니다","안녕하세요","사랑","학교"],
-answer:"안녕하세요"
-},
-
-{
-question:"What is 'Thank You' in Korean?",
-options:["물","감사합니다","고양이","친구"],
-answer:"감사합니다"
-},
-
-{
-question:"What is 'Love' in Korean?",
-options:["달","해","사랑","자동차"],
-answer:"사랑"
-},
-
-{
-question:"What is 'Friend' in Korean?",
-options:["친구","학교","음악","의자"],
-answer:"친구"
-},
-
-{
-question:"What is 'Water' in Korean?",
-options:["물","커피","우유","차"],
-answer:"물"
-},
-
-{
-question:"What is 'School' in Korean?",
-options:["사과","학교","기차","자동차"],
-answer:"학교"
-}
-
-];
-
-function updateUI(){
-
-document.getElementById("xp").innerHTML =
-"XP: " + xp;
-
-document.getElementById("level").innerHTML =
-"Level " + level;
-
-let progress = xp % 100;
-
-document.getElementById("progressBar").style.width =
-progress + "%";
-
-let badge = "🏅 Beginner Explorer";
-
-if(level >= 3){
-badge = "🥈 Seoul Challenger";
-}
-
-if(level >= 5){
-badge = "🥇 Korean Master";
-}
-
-if(level >= 8){
-badge = "👑 Seoul Legend";
-}
-
-document.getElementById("badge").innerHTML = badge;
-
-let maps = [
-"📍 Seoul Station District",
-"🌆 Gangnam Neon City",
-"🎓 Korea University Zone",
-"🛍️ Myeongdong Market",
-"🌃 Han River Night Route"
-];
-
-document.getElementById("map").innerHTML =
-maps[(level - 1) % maps.length];
-
-}
-
-function loadQuestion(){
-
-document.getElementById("result").innerHTML = "";
-document.getElementById("nextBtn").style.display = "none";
-
-let q = questions[currentQuestion];
-
-document.getElementById("question").innerHTML =
-q.question;
-
-let optionsHTML = "";
-
-q.options.forEach(option => {
-
-optionsHTML += `
-<button class="option"
-onclick="checkAnswer('${option}')">
-${option}
-</button>
-`;
-
+q.o.forEach(op=>{
+html += `<button class="option" onclick="check('${op}')">${op}</button>`;
 });
 
-document.getElementById("options").innerHTML =
-optionsHTML;
+document.getElementById("options").innerHTML = html;
 
 }
 
-function checkAnswer(selected){
+/* CHECK ANSWER */
+function check(ans){
 
-let correctAnswer = questions[currentQuestion].answer;
+let q = levels[currentLevel][index];
 
-if(selected === correctAnswer){
+if(ans === q.a){
 
 xp += 10;
+speak(q.a);
 
-speakKorean(correctAnswer);
-
-document.getElementById("result").innerHTML =
-"✅ Correct! +10 XP";
-
-document.getElementById("result").className =
-"correct";
+document.getElementById("result").innerText =
+"✅ Correct +10 XP";
 
 }else{
 
-document.getElementById("result").innerHTML =
-"❌ Wrong Answer";
-
-document.getElementById("result").className =
-"wrong";
+document.getElementById("result").innerText =
+"❌ Wrong";
 
 }
 
-if(xp >= level * 50){
+update();
+
+/* NEXT */
+index++;
+
+if(index >= levels[currentLevel].length){
+index = 0;
+currentLevel++;
 level++;
 }
 
-localStorage.setItem("xp", xp);
-localStorage.setItem("level", level);
-
-updateUI();
-
-document.getElementById("nextBtn").style.display =
-"inline-block";
+load();
 
 }
 
-function nextQuestion(){
+/* UI UPDATE */
+function update(){
 
-currentQuestion++;
+document.getElementById("xp").innerText = "XP: " + xp;
+document.getElementById("level").innerText = "Level: " + level;
 
-if(currentQuestion >= questions.length){
-currentQuestion = 0;
+if(xp < 50){
+document.getElementById("badge").innerText = "🏅 Beginner";
+}else if(xp < 100){
+document.getElementById("badge").innerText = "🥈 Explorer";
+}else{
+document.getElementById("badge").innerText = "🥇 Master";
 }
 
-loadQuestion();
+}
+
+/* KOREAN AI VOICE */
+function speak(text){
+
+let msg = new SpeechSynthesisUtterance(text);
+msg.lang = "ko-KR";
+msg.rate = 0.8;
+
+let voices = speechSynthesis.getVoices();
+let korean = voices.find(v=>v.lang.includes("ko"));
+
+if(korean){
+msg.voice = korean;
+}
+
+speechSynthesis.speak(msg);
 
 }
 
-updateUI();
-loadQuestion();
+load();
+update();
 
 </script>
 
