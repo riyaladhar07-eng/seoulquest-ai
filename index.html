@@ -115,41 +115,87 @@ if('serviceWorker' in navigator){
 navigator.serviceWorker.register('sw.js');
 }
 
-/* DATA */
+/* XP */
 let xp = 0;
-let level = 1;
+let currentAnswer = "";
 
-/* AI ENGINE */
-function generateQuestion(){
+/* 100+ WORD DATABASE */
+function getWords(){
 
-const words = [
+return [
 {en:"Hello", kr:"안녕하세요"},
+{en:"Goodbye", kr:"안녕"},
 {en:"Thank you", kr:"감사합니다"},
+{en:"Sorry", kr:"죄송합니다"},
+{en:"Yes", kr:"네"},
+{en:"No", kr:"아니요"},
 {en:"Friend", kr:"친구"},
-{en:"School", kr:"학교"},
-{en:"Water", kr:"물"},
 {en:"Love", kr:"사랑"},
-{en:"Book", kr:"책"},
-{en:"Teacher", kr:"선생님"},
+{en:"School", kr:"학교"},
 {en:"Student", kr:"학생"},
+{en:"Teacher", kr:"선생님"},
+{en:"Book", kr:"책"},
+{en:"Water", kr:"물"},
+{en:"Food", kr:"음식"},
+{en:"Rice", kr:"밥"},
 {en:"Coffee", kr:"커피"},
 {en:"Bus", kr:"버스"},
 {en:"Train", kr:"기차"},
+{en:"Car", kr:"자동차"},
+{en:"Airport", kr:"공항"},
 {en:"City", kr:"도시"},
 {en:"Korea", kr:"한국"},
-{en:"Food", kr:"음식"}
+{en:"Seoul", kr:"서울"},
+{en:"House", kr:"집"},
+{en:"Dog", kr:"개"},
+{en:"Cat", kr:"고양이"},
+{en:"Phone", kr:"전화"},
+{en:"Computer", kr:"컴퓨터"},
+{en:"Internet", kr:"인터넷"},
+{en:"Music", kr:"음악"},
+{en:"Movie", kr:"영화"},
+{en:"Game", kr:"게임"},
+{en:"Study", kr:"공부"},
+{en:"Sleep", kr:"잠"},
+{en:"Eat", kr:"먹다"},
+{en:"Drink", kr:"마시다"},
+{en:"Work", kr:"일"},
+{en:"Time", kr:"시간"},
+{en:"Today", kr:"오늘"},
+{en:"Tomorrow", kr:"내일"},
+{en:"Morning", kr:"아침"},
+{en:"Night", kr:"밤"},
+{en:"Weather", kr:"날씨"},
+{en:"Hot", kr:"더워"},
+{en:"Cold", kr:"추워"},
+{en:"Happy", kr:"행복"},
+{en:"Sad", kr:"슬픈"},
+{en:"Fast", kr:"빠른"},
+{en:"Slow", kr:"느린"},
+{en:"Red", kr:"빨간색"},
+{en:"Blue", kr:"파란색"},
+{en:"Green", kr:"초록색"},
+{en:"White", kr:"흰색"},
+{en:"Black", kr:"검은색"}
 ];
 
-let item = words[Math.floor(Math.random() * words.length)];
+}
+
+/* GENERATE AI QUESTION */
+function generateQuestion(){
+
+let words = getWords();
+
+let item = words[Math.floor(Math.random()*words.length)];
 
 let wrong = words
 .filter(w => w.kr !== item.kr)
-.sort(() => Math.random() - 0.5)
+.sort(()=>Math.random()-0.5)
 .slice(0,3)
-.map(w => w.kr);
+.map(w=>w.kr);
 
 let options = [...wrong, item.kr]
-.sort(() => Math.random() - 0.5);
+.sort(()=>Math.random()-0.5);
 
 return {
 q:"What is '" + item.en + "' in Korean?",
@@ -158,9 +204,6 @@ a:item.kr
 };
 
 }
-
-/* CURRENT ANSWER */
-let currentAnswer = "";
 
 /* LOAD */
 function load(){
@@ -179,6 +222,8 @@ html += `<button class="option" onclick="check('${op}')">${op}</button>`;
 
 document.getElementById("options").innerHTML = html;
 
+updateUI();
+
 }
 
 /* CHECK */
@@ -194,7 +239,6 @@ speak(currentAnswer);
 document.getElementById("result").innerText = "❌ Wrong";
 }
 
-updateUI();
 load();
 
 }
