@@ -96,7 +96,7 @@ font-size:18px;
 <h1>🎮 SeoulQuest AI</h1>
 
 <div id="avatar">
-🤖 Riya Guide: Learn Korean & Explore Seoul 🇰🇷
+🤖 Riya Guide: AI Infinite Korean Learning 🇰🇷
 </div>
 
 <div id="level"></div>
@@ -118,44 +118,56 @@ navigator.serviceWorker.register('sw.js');
 /* DATA */
 let xp = 0;
 let level = 1;
-let index = 0;
-let bossMode = false;
 
-/* QUESTIONS */
-const levels = {
-1:[
-{q:"Hello?",o:["안녕하세요","사랑","물","책"],a:"안녕하세요"},
-{q:"Thank you?",o:["감사합니다","학교","버스","의자"],a:"감사합니다"}
-],
-2:[
-{q:"School?",o:["학교","강","달","불"],a:"학교"},
-{q:"Friend?",o:["친구","고양이","버스","강"],a:"친구"}
-],
-3:[
-{q:"Water?",o:["물","밥","차","불"],a:"물"},
-{q:"Love?",o:["사랑","책","버스","강"],a:"사랑"}
-]
+/* AI ENGINE */
+function generateQuestion(){
+
+const words = [
+{en:"Hello", kr:"안녕하세요"},
+{en:"Thank you", kr:"감사합니다"},
+{en:"Friend", kr:"친구"},
+{en:"School", kr:"학교"},
+{en:"Water", kr:"물"},
+{en:"Love", kr:"사랑"},
+{en:"Book", kr:"책"},
+{en:"Teacher", kr:"선생님"},
+{en:"Student", kr:"학생"},
+{en:"Coffee", kr:"커피"},
+{en:"Bus", kr:"버스"},
+{en:"Train", kr:"기차"},
+{en:"City", kr:"도시"},
+{en:"Korea", kr:"한국"},
+{en:"Food", kr:"음식"}
+];
+
+let item = words[Math.floor(Math.random() * words.length)];
+
+let wrong = words
+.filter(w => w.kr !== item.kr)
+.sort(() => Math.random() - 0.5)
+.slice(0,3)
+.map(w => w.kr);
+
+let options = [...wrong, item.kr]
+.sort(() => Math.random() - 0.5);
+
+return {
+q:"What is '" + item.en + "' in Korean?",
+o:options,
+a:item.kr
 };
 
-/* BOSS */
-const bossQuestions = [
-{
-q:"🔥 Boss: I want to go to Seoul",
-o:["서울 가고 싶어요","학교 갑니다","물 주세요","친구 없어요"],
-a:"서울 가고 싶어요"
 }
-];
+
+/* CURRENT ANSWER */
+let currentAnswer = "";
 
 /* LOAD */
 function load(){
 
-let q;
+let q = generateQuestion();
 
-if(bossMode){
-q = bossQuestions[0];
-}else{
-q = levels[level][index];
-}
+currentAnswer = q.a;
 
 document.getElementById("question").innerText = q.q;
 
@@ -167,45 +179,22 @@ html += `<button class="option" onclick="check('${op}')">${op}</button>`;
 
 document.getElementById("options").innerHTML = html;
 
-updateUI();
-
 }
 
 /* CHECK */
 function check(ans){
 
-let q = bossMode ? bossQuestions[0] : levels[level][index];
+if(ans === currentAnswer){
 
-if(ans === q.a){
-
-xp += bossMode ? 30 : 10;
-
-document.getElementById("result").innerText =
-bossMode ? "🔥 BOSS DEFEATED +30 XP" : "✅ Correct";
-
-speak(q.a);
-
-/* boss exit */
-if(bossMode){
-bossMode = false;
-}
-
-/* trigger boss */
-if(index === 1){
-bossMode = true;
-}
+xp += 10;
+document.getElementById("result").innerText = "✅ Correct +10 XP";
+speak(currentAnswer);
 
 }else{
 document.getElementById("result").innerText = "❌ Wrong";
 }
 
-index++;
-
-if(index >= levels[level].length){
-index = 0;
-level++;
-}
-
+updateUI();
 load();
 
 }
@@ -213,8 +202,8 @@ load();
 /* UI */
 function updateUI(){
 
-document.getElementById("level").innerText = "Level: " + level;
 document.getElementById("xp").innerText = "XP: " + xp;
+document.getElementById("level").innerText = "Level: " + Math.floor(xp/50 + 1);
 
 }
 
@@ -229,14 +218,8 @@ speechSynthesis.speak(msg);
 }
 
 load();
+updateUI();
 
-</script>
-
-<!-- PWA CONNECT -->
-<script>
-if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('sw.js');
-}
 </script>
 
 </body>
