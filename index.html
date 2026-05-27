@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeoulQuest AI</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:linear-gradient(to bottom,#0f172a,#020617);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+}
+
+/* GAME CONTAINER */
+
+#game{
+width:90%;
+max-width:700px;
+background:#111827;
+padding:25px;
+border-radius:25px;
+box-shadow:0 0 30px rgba(56,189,248,0.3);
+text-align:center;
+border:1px solid #1e293b;
+}
+
+/* TITLE */
+
+h1{
+color:#38bdf8;
+font-size:38px;
+margin-bottom:10px;
+}
+
+/* LEVEL */
+
+#level{
+font-size:18px;
+margin-bottom:10px;
+color:#f472b6;
+}
+
+/* XP */
+
+#xp{
+font-size:18px;
+margin-bottom:20px;
+}
+
+/* PROGRESS BAR */
+
+#progressContainer{
+width:100%;
+height:20px;
+background:#1e293b;
+border-radius:20px;
+overflow:hidden;
+margin-bottom:25px;
+}
+
+#progressBar{
+height:100%;
+width:0%;
+background:linear-gradient(to right,#38bdf8,#0ea5e9);
+transition:0.4s;
+}
+
+/* QUESTION */
+
+#question{
+font-size:24px;
+margin-bottom:25px;
+}
+
+/* BUTTONS */
+
+.option{
+display:block;
+width:100%;
+padding:15px;
+margin:12px 0;
+border:none;
+border-radius:15px;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+background:#1e293b;
+color:white;
+transition:0.3s;
+border:1px solid #334155;
+}
+
+.option:hover{
+transform:scale(1.03);
+background:#2563eb;
+}
+
+/* RESULT */
+
+#result{
+margin-top:20px;
+font-size:22px;
+font-weight:bold;
+height:30px;
+}
+
+/* NEXT BUTTON */
+
+#nextBtn{
+margin-top:25px;
+padding:14px 25px;
+border:none;
+border-radius:15px;
+background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+color:white;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+display:none;
+}
+
+#nextBtn:hover{
+transform:scale(1.05);
+}
+
+/* ANIMATION */
+
+.correct{
+color:#22c55e;
+}
+
+.wrong{
+color:#ef4444;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+<h1>🎮 SeoulQuest AI</h1>
+
+<div id="level">Level 1</div>
+
+<div id="xp">XP: 0</div>
+
+<div id="progressContainer">
+<div id="progressBar"></div>
+</div>
+
+<div id="question"></div>
+
+<div id="options"></div>
+
+<div id="result"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">Next Level ➜</button>
+
+</div>
+
+<script>
+
+let xp = 0;
+let level = 1;
+let currentQuestion = 0;
+
+const questions = [
+
+{
+question:"What is 'Hello' in Korean?",
+options:["감사합니다","안녕하세요","학교","사랑"],
+answer:"안녕하세요"
+},
+
+{
+question:"What is 'Thank You' in Korean?",
+options:["고양이","감사합니다","자동차","친구"],
+answer:"감사합니다"
+},
+
+{
+question:"What is 'School' in Korean?",
+options:["학교","물","바나나","강아지"],
+answer:"학교"
+},
+
+{
+question:"What is 'Friend' in Korean?",
+options:["사랑","친구","책","의자"],
+answer:"친구"
+},
+
+{
+question:"What is 'Love' in Korean?",
+options:["바다","사랑","달","해"],
+answer:"사랑"
+},
+
+{
+question:"What is 'Book' in Korean?",
+options:["물","차","책","강"],
+answer:"책"
+}
+
+];
+
+function loadQuestion(){
+
+document.getElementById("result").innerHTML = "";
+document.getElementById("nextBtn").style.display = "none";
+
+let q = questions[currentQuestion];
+
+document.getElementById("question").innerHTML = q.question;
+
+let optionsHTML = "";
+
+q.options.forEach(option => {
+
+optionsHTML += `
+<button class="option" onclick="checkAnswer('${option}')">
+${option}
+</button>
+`;
+
+});
+
+document.getElementById("options").innerHTML = optionsHTML;
+
+}
+
+function checkAnswer(selected){
+
+let correctAnswer = questions[currentQuestion].answer;
+
+if(selected === correctAnswer){
+
+xp += 10;
+
+document.getElementById("result").innerHTML =
+"✅ Correct! +10 XP";
+
+document.getElementById("result").className = "correct";
+
+}else{
+
+document.getElementById("result").innerHTML =
+"❌ Wrong Answer";
+
+document.getElementById("result").className = "wrong";
+
+}
+
+document.getElementById("xp").innerHTML =
+"XP: " + xp;
+
+let progress = (xp % 50) * 2;
+
+document.getElementById("progressBar").style.width =
+progress + "%";
+
+document.getElementById("nextBtn").style.display =
+"inline-block";
+
+}
+
+function nextQuestion(){
+
+currentQuestion++;
+
+if(currentQuestion >= questions.length){
+
+currentQuestion = 0;
+
+level++;
+
+document.getElementById("level").innerHTML =
+"Level " + level;
+
+}
+
+loadQuestion();
+
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
