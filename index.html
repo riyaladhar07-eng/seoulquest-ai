@@ -8,7 +8,6 @@
 
 <style>
 
-/* ===== BACKGROUND ===== */
 body{
 margin:0;
 font-family:Arial,sans-serif;
@@ -21,7 +20,7 @@ height:100vh;
 overflow:hidden;
 }
 
-/* ===== GAME BOX ===== */
+/* GAME CARD */
 .game{
 width:92%;
 max-width:800px;
@@ -30,18 +29,17 @@ padding:20px;
 border-radius:20px;
 text-align:center;
 border:1px solid #334155;
-animation:fadeIn 1s ease;
+animation:fade 1s ease;
 }
 
-@keyframes fadeIn{
-from{opacity:0; transform:scale(0.9);}
-to{opacity:1; transform:scale(1);}
+@keyframes fade{
+from{opacity:0;transform:scale(0.9);}
+to{opacity:1;transform:scale(1);}
 }
 
-/* ===== TITLE ===== */
 h1{color:#38bdf8;}
 
-/* ===== AVATAR ===== */
+/* AVATAR */
 #avatar{
 background:#111827;
 padding:12px;
@@ -51,15 +49,15 @@ border:1px solid #334155;
 transition:0.3s;
 }
 
-/* ===== TOP BAR ===== */
+/* TOP INFO */
 .top{
 display:flex;
 justify-content:space-between;
-margin-bottom:10px;
 font-size:14px;
+margin-bottom:10px;
 }
 
-/* ===== XP BAR ===== */
+/* XP BAR */
 .bar{
 width:100%;
 height:10px;
@@ -76,14 +74,13 @@ background:linear-gradient(90deg,#38bdf8,#0ea5e9);
 transition:0.3s;
 }
 
-/* ===== QUESTION ===== */
+/* QUESTION */
 .q{
 font-size:20px;
 margin:15px 0;
-transition:0.3s;
 }
 
-/* ===== BUTTONS ===== */
+/* BUTTON */
 .btn{
 display:block;
 width:100%;
@@ -102,7 +99,7 @@ background:#2563eb;
 transform:scale(1.03);
 }
 
-/* ===== RESULT ===== */
+/* RESULT */
 #result{
 min-height:25px;
 margin-top:10px;
@@ -139,22 +136,28 @@ margin-top:10px;
 
 <script>
 
-/* ===== GAME DATA ===== */
+/* ================= CORE ================= */
 let xp = 0;
 let energy = 100;
 let combo = 0;
+let streak = 0;
 let currentAnswer = "";
 
-/* ===== RIYA AVATAR ===== */
+/* ================= AVATAR ================= */
 function avatar(type){
 
 let av = document.getElementById("avatar");
 
 if(type==="correct"){
-av.innerHTML="🤖 Riya: Excellent! ⭐";
-}else if(type==="wrong"){
+av.innerHTML="🤖 Riya: Excellent! 🚀";
+}
+else if(type==="wrong"){
 av.innerHTML="🤖 Riya: Try again 💡";
-}else{
+}
+else if(type==="streak"){
+av.innerHTML="🤖 Riya: 🔥 STREAK MASTER!";
+}
+else{
 av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
 }
 
@@ -164,7 +167,7 @@ av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
 
 }
 
-/* ===== 50+ WORDS ===== */
+/* ================= WORD BANK ================= */
 function words(){
 return [
 ["Hello","안녕하세요"],
@@ -215,11 +218,13 @@ return [
 ["Market","시장"],
 ["Street","거리"],
 ["Walk","걷다"],
-["Run","달리다"]
+["Run","달리다"],
+["Eat","먹다"],
+["Drink","마시다"]
 ];
 }
 
-/* ===== GENERATE QUESTION ===== */
+/* ================= GENERATE ================= */
 function gen(){
 
 let w = words();
@@ -242,7 +247,7 @@ a:item[1]
 
 }
 
-/* ===== LOAD ===== */
+/* ================= LOAD ================= */
 function load(){
 
 let q = gen();
@@ -260,52 +265,61 @@ document.getElementById("options").innerHTML=html;
 
 }
 
-/* ===== CHECK ===== */
+/* ================= CHECK ================= */
 function check(ans){
 
 if(ans===currentAnswer){
 
 xp+=10;
 combo++;
-
-document.getElementById("result").innerText=
-"✅ Correct +10 XP | Combo: "+combo;
+streak++;
 
 avatar("correct");
 
-/* combo bonus */
+/* STREAK */
+if(streak===3){
+xp+=10;
+avatar("streak");
+}
+if(streak===5){
+xp+=20;
+}
+
+/* COMBO BONUS */
 if(combo%3===0){
 xp+=20;
-document.getElementById("result").innerText+=" 🔥 COMBO BONUS!";
+document.getElementById("result").innerText="🔥 COMBO BONUS!";
 }
+
+document.getElementById("result").innerText="✅ Correct +10 XP";
 
 }else{
 
 combo=0;
+streak=0;
 energy-=15;
 
-document.getElementById("result").innerText=
-"❌ Wrong | Energy: "+energy;
-
 avatar("wrong");
+
+document.getElementById("result").innerText="❌ Wrong | Energy: "+energy;
 
 }
 
 /* GAME OVER */
 if(energy<=0){
-alert("💀 Game Over Restarting");
+alert("💀 Game Over Restarting...");
 xp=0;
 energy=100;
 combo=0;
+streak=0;
 }
 
-/* UPDATE */
 update();
 load();
 
 }
 
-/* ===== UI ===== */
+/* ================= UI ================= */
 function update(){
 
 document.getElementById("xp").innerText=xp;
@@ -318,7 +332,7 @@ document.getElementById("bar").style.width=bar+"%";
 
 }
 
-/* START */
+/* ================= START ================= */
 load();
 update();
 
@@ -326,3 +340,4 @@ update();
 
 </body>
 </html>
+
