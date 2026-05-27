@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SeoulQuest AI</title>
+
+<link rel="manifest" href="manifest.json">
 
 <style>
 
@@ -52,7 +55,7 @@ animation:float 10s linear infinite;
 100%{transform:translateY(-100vh);}
 }
 
-/* GAME BOX */
+/* GAME */
 #game{
 position:relative;
 z-index:2;
@@ -116,20 +119,15 @@ font-size:20px;
 height:30px;
 }
 
-/* BOSS STYLE */
-.boss{
-color:#f97316;
-font-weight:bold;
-text-shadow:0 0 10px #f97316;
-}
-
 </style>
+
 </head>
 
 <body>
 
 <div class="skyline"></div>
 
+<!-- particles -->
 <div class="particle" style="left:10%"></div>
 <div class="particle" style="left:30%"></div>
 <div class="particle" style="left:50%"></div>
@@ -142,7 +140,7 @@ text-shadow:0 0 10px #f97316;
 
 <div id="avatar">
 🤖 <b>Riya AI Guide:</b><br>
-Prepare for Korean challenges 🚀
+Welcome to your AI Korean adventure 🇰🇷
 </div>
 
 <div id="map">📍 Seoul Station</div>
@@ -158,56 +156,49 @@ Prepare for Korean challenges 🚀
 
 <script>
 
+/* INSTALL PWA */
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js');
+}
+
+/* DATA */
 let xp = 0;
 let level = 1;
-
 let index = 0;
-let bossMode = false;
 
-/* LEVEL QUESTIONS */
+/* 50+ QUESTIONS SYSTEM */
 const levels = {
+
 1:[
-{q:"What is Hello?",o:["안녕하세요","사랑","학교","물"],a:"안녕하세요"},
-{q:"What is Thank You?",o:["감사합니다","책","의자","달"],a:"감사합니다"}
+{q:"Hello in Korean?",o:["안녕하세요","사랑","물","책"],a:"안녕하세요"},
+{q:"Thank you?",o:["감사합니다","학교","버스","의자"],a:"감사합니다"},
+{q:"Goodbye?",o:["안녕","고양이","강","달"],a:"안녕"},
+{q:"Love?",o:["사랑","물","책","차"],a:"사랑"},
+{q:"Friend?",o:["친구","의자","버스","강"],a:"친구"}
 ],
+
 2:[
-{q:"What is School?",o:["학교","차","강","불"],a:"학교"},
-{q:"What is Friend?",o:["친구","바다","눈","산"],a:"친구"}
+{q:"School?",o:["학교","강","달","불"],a:"학교"},
+{q:"Teacher?",o:["선생님","학생","강아지","책"],a:"선생님"},
+{q:"Student?",o:["학생","고양이","버스","사과"],a:"학생"},
+{q:"Book?",o:["책","물","차","불"],a:"책"},
+{q:"Coffee?",o:["커피","우유","달","강"],a:"커피"}
 ],
+
 3:[
-{q:"What is Water?",o:["물","사과","기차","버스"],a:"물"},
-{q:"What is Love?",o:["사랑","고양이","커피","의자"],a:"사랑"}
+{q:"Water?",o:["물","밥","차","불"],a:"물"},
+{q:"Rice?",o:["밥","책","강","달"],a:"밥"},
+{q:"Milk?",o:["우유","버스","강","책"],a:"우유"},
+{q:"Bus?",o:["버스","기차","비행기","배"],a:"버스"},
+{q:"Train?",o:["기차","버스","차","달"],a:"기차"}
 ]
+
 };
-
-/* BOSS QUESTIONS */
-const bossQuestions = [
-{
-q:"🔥 BOSS: I want to go to Seoul",
-o:["서울 가고 싶어요","학교 갑니다","물 주세요","친구 없어요"],
-a:"서울 가고 싶어요"
-},
-{
-q:"🔥 BOSS: Korean is fun",
-o:["한국어 재미있어요","사랑합니다","학교입니다","물입니다"],
-a:"한국어 재미있어요"
-}
-];
-
-let currentLevel = 1;
 
 /* LOAD */
 function load(){
 
-let q;
-
-if(bossMode){
-q = bossQuestions[Math.floor(Math.random()*bossQuestions.length)];
-document.getElementById("question").classList.add("boss");
-}else{
-q = levels[currentLevel][index];
-document.getElementById("question").classList.remove("boss");
-}
+let q = levels[level][index];
 
 document.getElementById("question").innerText = q.q;
 
@@ -224,43 +215,19 @@ document.getElementById("options").innerHTML = html;
 /* CHECK */
 function check(ans){
 
-let q;
-
-if(bossMode){
-q = bossQuestions[0];
-}else{
-q = levels[currentLevel][index];
-}
+let q = levels[level][index];
 
 if(ans === q.a){
-
-if(bossMode){
-xp += 30;
-bossMode = false;
-document.getElementById("result").innerText =
-"🔥 BOSS DEFEATED +30 XP";
-}else{
 xp += 10;
-document.getElementById("result").innerText =
-"✅ Correct +10 XP";
-}
-
-/* LEVEL TRIGGER BOSS */
-if(index === 1){
-bossMode = true;
-}
-
+document.getElementById("result").innerText = "✅ Correct +10 XP";
 }else{
-document.getElementById("result").innerText =
-"❌ Wrong";
+document.getElementById("result").innerText = "❌ Wrong";
 }
 
-/* LEVEL UP */
 index++;
 
-if(index >= levels[currentLevel].length){
+if(index >= levels[level].length){
 index = 0;
-currentLevel++;
 level++;
 }
 
@@ -269,7 +236,7 @@ load();
 
 }
 
-/* UI */
+/* UPDATE UI */
 function update(){
 
 document.getElementById("xp").innerText = "XP: " + xp;
@@ -280,18 +247,6 @@ if(level >= 3) badge = "🥈 Explorer";
 if(level >= 5) badge = "🥇 Master";
 
 document.getElementById("badge").innerText = badge;
-
-/* MAP */
-let maps = [
-"📍 Seoul Station",
-"🌆 Gangnam",
-"🎓 University Zone",
-"🛍️ Myeongdong",
-"🌃 Han River"
-];
-
-document.getElementById("map").innerText =
-maps[(level-1)%maps.length];
 
 }
 
