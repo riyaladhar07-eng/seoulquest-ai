@@ -4,265 +4,209 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SeoulQuest AI</title>
-
-<link rel="manifest" href="manifest.json">
+<title>SeoulQuest AI PRO</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Arial,sans-serif;
-background:linear-gradient(to bottom,#020617,#0f172a,#111827);
+background:linear-gradient(to bottom,#020617,#0f172a,#000);
 color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 overflow:hidden;
-position:relative;
 }
 
-.skyline{
-position:absolute;
-bottom:0;
-width:200%;
-height:160px;
-background:linear-gradient(to right,#1e293b,#0f172a);
-opacity:0.3;
-animation:move 25s linear infinite;
-}
-
-@keyframes move{
-0%{transform:translateX(0);}
-100%{transform:translateX(-50%);}
-}
-
-#game{
-position:relative;
-z-index:2;
-width:90%;
-max-width:750px;
+.game{
+width:92%;
+max-width:800px;
 background:rgba(15,23,42,0.95);
-padding:25px;
-border-radius:25px;
+padding:20px;
+border-radius:20px;
 text-align:center;
 border:1px solid #334155;
 }
 
-h1{
-color:#38bdf8;
-}
+h1{color:#38bdf8;}
 
-#avatar{
-background:#111827;
-padding:12px;
-border-radius:15px;
-margin-bottom:15px;
-border:1px solid #334155;
-}
-
-.option{
+.btn{
 display:block;
 width:100%;
-padding:14px;
 margin:10px 0;
+padding:12px;
 background:#1e293b;
 border:none;
-border-radius:12px;
 color:white;
+border-radius:10px;
 cursor:pointer;
 }
 
-.option:hover{
-background:#2563eb;
+.btn:hover{background:#2563eb;}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+font-size:14px;
+margin-bottom:10px;
 }
 
-#result{
-margin-top:10px;
-font-size:18px;
+.map{
+margin:10px 0;
+padding:8px;
+background:#111827;
+border-radius:10px;
+}
+
+.boss{
+color:#ff3b3b;
+font-weight:bold;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="skyline"></div>
+<div class="game">
 
-<div id="game">
+<h1>🎮 SeoulQuest AI PRO</h1>
 
-<h1>🎮 SeoulQuest AI</h1>
-
-<div id="avatar">
-🤖 Riya Guide: AI Infinite Korean Learning 🇰🇷
+<div class="topbar">
+<div>XP: <span id="xp">0</span></div>
+<div>Level: <span id="level">1</span></div>
+<div>Stage: <span id="stage">Station</span></div>
 </div>
 
-<div id="level"></div>
-<div id="xp"></div>
+<div class="map" id="map">📍 Seoul Station Zone</div>
 
 <div id="question"></div>
+
 <div id="options"></div>
+
 <div id="result"></div>
+
+<div style="margin-top:10px;">
+<button class="btn" onclick="toggleMusic()">🎵 Music ON/OFF</button>
+</div>
 
 </div>
 
 <script>
 
-/* PWA */
-if('serviceWorker' in navigator){
-navigator.serviceWorker.register('sw.js');
+/* ================= MUSIC ================= */
+let music = false;
+
+function toggleMusic(){
+music = !music;
+alert(music ? "Music ON (add mp3 later)" : "Music OFF");
 }
 
-/* XP */
-let xp = 0;
-let currentAnswer = "";
+/* ================= SAVE ================= */
+let xp = localStorage.getItem("xp") || 0;
+xp = parseInt(xp);
 
-/* 100+ WORD DATABASE */
-function getWords(){
+let level = Math.floor(xp/50)+1;
 
-return [
-{en:"Hello", kr:"안녕하세요"},
-{en:"Goodbye", kr:"안녕"},
-{en:"Thank you", kr:"감사합니다"},
-{en:"Sorry", kr:"죄송합니다"},
-{en:"Yes", kr:"네"},
-{en:"No", kr:"아니요"},
-{en:"Friend", kr:"친구"},
-{en:"Love", kr:"사랑"},
-{en:"School", kr:"학교"},
-{en:"Student", kr:"학생"},
-{en:"Teacher", kr:"선생님"},
-{en:"Book", kr:"책"},
-{en:"Water", kr:"물"},
-{en:"Food", kr:"음식"},
-{en:"Rice", kr:"밥"},
-{en:"Coffee", kr:"커피"},
-{en:"Bus", kr:"버스"},
-{en:"Train", kr:"기차"},
-{en:"Car", kr:"자동차"},
-{en:"Airport", kr:"공항"},
-{en:"City", kr:"도시"},
-{en:"Korea", kr:"한국"},
-{en:"Seoul", kr:"서울"},
-{en:"House", kr:"집"},
-{en:"Dog", kr:"개"},
-{en:"Cat", kr:"고양이"},
-{en:"Phone", kr:"전화"},
-{en:"Computer", kr:"컴퓨터"},
-{en:"Internet", kr:"인터넷"},
-{en:"Music", kr:"음악"},
-{en:"Movie", kr:"영화"},
-{en:"Game", kr:"게임"},
-{en:"Study", kr:"공부"},
-{en:"Sleep", kr:"잠"},
-{en:"Eat", kr:"먹다"},
-{en:"Drink", kr:"마시다"},
-{en:"Work", kr:"일"},
-{en:"Time", kr:"시간"},
-{en:"Today", kr:"오늘"},
-{en:"Tomorrow", kr:"내일"},
-{en:"Morning", kr:"아침"},
-{en:"Night", kr:"밤"},
-{en:"Weather", kr:"날씨"},
-{en:"Hot", kr:"더워"},
-{en:"Cold", kr:"추워"},
-{en:"Happy", kr:"행복"},
-{en:"Sad", kr:"슬픈"},
-{en:"Fast", kr:"빠른"},
-{en:"Slow", kr:"느린"},
-{en:"Red", kr:"빨간색"},
-{en:"Blue", kr:"파란색"},
-{en:"Green", kr:"초록색"},
-{en:"White", kr:"흰색"},
-{en:"Black", kr:"검은색"}
+/* ================= BOSSES ================= */
+const bosses = [
+"🔥 Boss 1: Seoul Guard",
+"🔥 Boss 2: Language Demon",
+"🔥 Final Boss: King of Seoul"
 ];
 
+/* ================= MAP ================= */
+function updateMap(){
+if(level < 3) document.getElementById("stage").innerText = "Station";
+else if(level < 6) document.getElementById("stage").innerText = "City";
+else document.getElementById("stage").innerText = "Palace";
 }
 
-/* GENERATE AI QUESTION */
-function generateQuestion(){
+/* ================= AI QUESTIONS ================= */
+function gen(){
 
-let words = getWords();
+const words = [
+["Hello","안녕하세요"],
+["Thank you","감사합니다"],
+["Friend","친구"],
+["Love","사랑"],
+["School","학교"],
+["Book","책"],
+["Water","물"],
+["Food","음식"],
+["Bus","버스"],
+["Train","기차"],
+["City","도시"],
+["Korea","한국"],
+["Seoul","서울"],
+["Game","게임"],
+["Study","공부"],
+["Music","음악"]
+];
 
-let item = words[Math.floor(Math.random()*words.length)];
+let w = words[Math.floor(Math.random()*words.length)];
 
 let wrong = words
-.filter(w => w.kr !== item.kr)
+.filter(x=>x[1]!=w[1])
 .sort(()=>Math.random()-0.5)
 .slice(0,3)
-.map(w=>w.kr);
+.map(x=>x[1]);
 
-let options = [...wrong, item.kr]
+let options = [...wrong,w[1]]
 .sort(()=>Math.random()-0.5);
 
-return {
-q:"What is '" + item.en + "' in Korean?",
-o:options,
-a:item.kr
-};
-
+return {q:`What is "${w[0]}" in Korean?`,o:options,a:w[1]};
 }
 
-/* LOAD */
+/* ================= GAME ================= */
+let current;
+
 function load(){
 
-let q = generateQuestion();
+current = gen();
 
-currentAnswer = q.a;
+document.getElementById("question").innerText = current.q;
 
-document.getElementById("question").innerText = q.q;
+let html="";
 
-let html = "";
-
-q.o.forEach(op=>{
-html += `<button class="option" onclick="check('${op}')">${op}</button>`;
+current.o.forEach(op=>{
+html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
-document.getElementById("options").innerHTML = html;
+document.getElementById("options").innerHTML=html;
 
-updateUI();
+document.getElementById("xp").innerText=xp;
+document.getElementById("level").innerText=Math.floor(xp/50)+1;
+
+updateMap();
 
 }
 
-/* CHECK */
+/* ================= CHECK ================= */
 function check(ans){
 
-if(ans === currentAnswer){
+if(ans===current.a){
 
-xp += 10;
-document.getElementById("result").innerText = "✅ Correct +10 XP";
-speak(currentAnswer);
+xp+=10;
+localStorage.setItem("xp",xp);
+
+document.getElementById("result").innerText="✅ Correct +10 XP";
+
+if(xp%100===0){
+alert(bosses[Math.floor(xp/100)%3]);
+}
 
 }else{
-document.getElementById("result").innerText = "❌ Wrong";
+document.getElementById("result").innerText="❌ Wrong";
 }
 
 load();
 
 }
 
-/* UI */
-function updateUI(){
-
-document.getElementById("xp").innerText = "XP: " + xp;
-document.getElementById("level").innerText = "Level: " + Math.floor(xp/50 + 1);
-
-}
-
-/* VOICE */
-function speak(text){
-
-let msg = new SpeechSynthesisUtterance(text);
-msg.lang = "ko-KR";
-msg.rate = 0.8;
-speechSynthesis.speak(msg);
-
-}
-
 load();
-updateUI();
 
 </script>
 
