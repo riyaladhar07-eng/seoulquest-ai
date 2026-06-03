@@ -3,11 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>SeoulQuest AI</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Arial,sans-serif;
@@ -20,7 +18,6 @@ height:100vh;
 overflow:hidden;
 }
 
-/* GAME CARD */
 .game{
 width:92%;
 max-width:800px;
@@ -29,27 +26,18 @@ padding:20px;
 border-radius:20px;
 text-align:center;
 border:1px solid #334155;
-animation:fade 1s ease;
-}
-
-@keyframes fade{
-from{opacity:0;transform:scale(0.9);}
-to{opacity:1;transform:scale(1);}
 }
 
 h1{color:#38bdf8;}
 
-/* AVATAR */
 #avatar{
 background:#111827;
 padding:12px;
 border-radius:15px;
 margin-bottom:15px;
 border:1px solid #334155;
-transition:0.3s;
 }
 
-/* TOP INFO */
 .top{
 display:flex;
 justify-content:space-between;
@@ -57,7 +45,6 @@ font-size:14px;
 margin-bottom:10px;
 }
 
-/* XP BAR */
 .bar{
 width:100%;
 height:10px;
@@ -71,16 +58,13 @@ margin-bottom:10px;
 height:100%;
 width:0%;
 background:linear-gradient(90deg,#38bdf8,#0ea5e9);
-transition:0.3s;
 }
 
-/* QUESTION */
 .q{
 font-size:20px;
 margin:15px 0;
 }
 
-/* BUTTON */
 .btn{
 display:block;
 width:100%;
@@ -91,20 +75,17 @@ border-radius:10px;
 background:#1e293b;
 color:white;
 cursor:pointer;
-transition:0.2s;
 }
 
 .btn:hover{
 background:#2563eb;
-transform:scale(1.03);
 }
 
-/* RESULT */
-#result{
-min-height:25px;
+#badges{
 margin-top:10px;
+font-size:14px;
+color:#fbbf24;
 }
-
 </style>
 </head>
 
@@ -126,45 +107,33 @@ margin-top:10px;
 <div class="fill" id="bar"></div>
 </div>
 
+<div id="badges">🏆 Badges: None</div>
+
 <div class="q" id="question"></div>
-
 <div id="options"></div>
-
 <div id="result"></div>
+
+<button class="btn" onclick="startStory()">📖 Start Story Mode</button>
 
 </div>
 
 <script>
 
-/* ================= CORE ================= */
-let xp = 0;
-let energy = 100;
-let combo = 0;
+/* ================= DATA ================= */
+let xp = parseInt(localStorage.getItem("xp")) || 0;
+let energy = parseInt(localStorage.getItem("energy")) || 100;
 let streak = 0;
+let combo = 0;
 let currentAnswer = "";
 
-/* ================= AVATAR ================= */
-function avatar(type){
+/* ================= BADGES ================= */
+let badges = JSON.parse(localStorage.getItem("badges")) || [];
 
-let av = document.getElementById("avatar");
-
-if(type==="correct"){
-av.innerHTML="🤖 Riya: Excellent! 🚀";
+function unlockBadge(name){
+if(!badges.includes(name)){
+badges.push(name);
+localStorage.setItem("badges", JSON.stringify(badges));
 }
-else if(type==="wrong"){
-av.innerHTML="🤖 Riya: Try again 💡";
-}
-else if(type==="streak"){
-av.innerHTML="🤖 Riya: 🔥 STREAK MASTER!";
-}
-else{
-av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
-}
-
-setTimeout(()=>{
-av.innerHTML="🤖 Riya Guide: Learn Korean 🇰🇷";
-},1200);
-
 }
 
 /* ================= WORD BANK ================= */
@@ -185,50 +154,13 @@ return [
 ["Korea","한국"],
 ["Seoul","서울"],
 ["Game","게임"],
-["Study","공부"],
-["Music","음악"],
-["Movie","영화"],
-["Night","밤"],
-["Day","하루"],
-["Time","시간"],
-["Teacher","선생님"],
-["Student","학생"],
-["Coffee","커피"],
-["Dog","개"],
-["Cat","고양이"],
-["Phone","전화"],
-["Computer","컴퓨터"],
-["Internet","인터넷"],
-["Weather","날씨"],
-["Hot","더워"],
-["Cold","추워"],
-["Happy","행복"],
-["Sad","슬픈"],
-["Fast","빠른"],
-["Slow","느린"],
-["Red","빨간색"],
-["Blue","파란색"],
-["Green","초록색"],
-["White","흰색"],
-["Black","검은색"],
-["Car","자동차"],
-["Airplane","비행기"],
-["Airport","공항"],
-["House","집"],
-["Market","시장"],
-["Street","거리"],
-["Walk","걷다"],
-["Run","달리다"],
-["Eat","먹다"],
-["Drink","마시다"]
+["Study","공부"]
 ];
 }
 
 /* ================= GENERATE ================= */
 function gen(){
-
 let w = words();
-
 let item = w[Math.floor(Math.random()*w.length)];
 
 let wrong = w.filter(x=>x[1]!=item[1])
@@ -236,105 +168,109 @@ let wrong = w.filter(x=>x[1]!=item[1])
 .slice(0,3)
 .map(x=>x[1]);
 
-let options = [...wrong,item[1]]
-.sort(()=>Math.random()-0.5);
+let options = [...wrong,item[1]].sort(()=>Math.random()-0.5);
 
 return {
 q:`What is "${item[0]}" in Korean?`,
 o:options,
 a:item[1]
 };
-
 }
 
 /* ================= LOAD ================= */
 function load(){
-
 let q = gen();
 currentAnswer = q.a;
 
-document.getElementById("question").innerText=q.q;
+document.getElementById("question").innerText = q.q;
 
-let html="";
-
-q.o.forEach(op=>{
-html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
-});
-
-document.getElementById("options").innerHTML=html;
-
+document.getElementById("options").innerHTML =
+q.o.map(op=>`<button class="btn" onclick="check('${op}')">${op}</button>`).join("");
 }
 
 /* ================= CHECK ================= */
 function check(ans){
 
-if(ans===currentAnswer){
+if(ans === currentAnswer){
 
-xp+=10;
-combo++;
+xp += 10;
 streak++;
+combo++;
 
-avatar("correct");
+document.getElementById("result").innerText = "✅ Correct +10 XP";
 
-/* STREAK */
-if(streak===3){
-xp+=10;
-avatar("streak");
-}
-if(streak===5){
-xp+=20;
-}
-
-/* COMBO BONUS */
-if(combo%3===0){
-xp+=20;
-document.getElementById("result").innerText="🔥 COMBO BONUS!";
-}
-
-document.getElementById("result").innerText="✅ Correct +10 XP";
+/* BADGES SYSTEM */
+if(xp >= 50) unlockBadge("🌱 Beginner");
+if(xp >= 150) unlockBadge("⚡ Learner");
+if(streak >= 3) unlockBadge("🔥 Streak Master");
+if(combo >= 5) unlockBadge("💥 Combo King");
 
 }else{
 
-combo=0;
-streak=0;
-energy-=15;
+streak = 0;
+combo = 0;
+energy -= 15;
 
-avatar("wrong");
-
-document.getElementById("result").innerText="❌ Wrong | Energy: "+energy;
-
+document.getElementById("result").innerText = "❌ Wrong!";
 }
+
+/* LEVEL SYSTEM */
+let level = Math.floor(xp / 50) + 1;
+
+/* SAVE */
+localStorage.setItem("xp", xp);
+localStorage.setItem("energy", energy);
 
 /* GAME OVER */
-if(energy<=0){
-alert("💀 Game Over Restarting...");
-xp=0;
-energy=100;
-combo=0;
-streak=0;
+if(energy <= 0){
+alert("Game Over! Restarting...");
+xp = 0;
+energy = 100;
 }
 
+/* UPDATE */
 update();
+updateBadges();
 load();
-
 }
 
-/* ================= UI ================= */
+/* ================= UI UPDATE ================= */
 function update(){
+document.getElementById("xp").innerText = xp;
+document.getElementById("level").innerText = Math.floor(xp/50)+1;
+document.getElementById("energy").innerText = energy;
 
-document.getElementById("xp").innerText=xp;
-document.getElementById("level").innerText=Math.floor(xp/50)+1;
-document.getElementById("energy").innerText=energy;
-
-/* XP BAR */
-let bar=(xp%50)*2;
-document.getElementById("bar").style.width=bar+"%";
-
+document.getElementById("bar").style.width = (xp % 50) * 2 + "%";
 }
 
-/* ================= START ================= */
-load();
+/* ================= BADGE UI ================= */
+function updateBadges(){
+document.getElementById("badges").innerText =
+badges.length ? "🏆 Badges: " + badges.join(" | ") : "🏆 Badges: None";
+}
+
+/* ================= STORY MODE ================= */
+function startStory(){
+
+document.getElementById("question").innerText =
+"🇰🇷 Chapter 1: You arrive in Seoul Airport. Say Hello in Korean.";
+
+currentAnswer = "안녕하세요";
+
+document.getElementById("options").innerHTML = `
+<button class="btn" onclick="check('안녕하세요')">안녕하세요</button>
+<button class="btn" onclick="check('감사합니다')">감사합니다</button>
+<button class="btn" onclick="check('사랑')">사랑</button>
+<button class="btn" onclick="check('학교')">학교</button>
+`;
+
+document.getElementById("result").innerText = "📖 Story Mode Started!";
+}
+
+/* ================= INIT ================= */
 update();
+updateBadges();
+load();
 
 </script>
 
