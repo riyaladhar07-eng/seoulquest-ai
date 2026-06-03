@@ -8,14 +8,13 @@
 <style>
 body{
 margin:0;
-font-family:Arial,sans-serif;
+font-family:Arial;
 background:linear-gradient(to bottom,#020617,#0f172a,#000);
 color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
-overflow:hidden;
 }
 
 .game{
@@ -32,17 +31,15 @@ h1{color:#38bdf8;}
 
 #avatar{
 background:#111827;
-padding:12px;
-border-radius:15px;
-margin-bottom:15px;
-border:1px solid #334155;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
 }
 
 .top{
 display:flex;
 justify-content:space-between;
 font-size:14px;
-margin-bottom:10px;
 }
 
 .bar{
@@ -51,13 +48,13 @@ height:10px;
 background:#1e293b;
 border-radius:10px;
 overflow:hidden;
-margin-bottom:10px;
+margin:10px 0;
 }
 
 .fill{
 height:100%;
 width:0%;
-background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+background:#38bdf8;
 }
 
 .q{
@@ -81,10 +78,9 @@ cursor:pointer;
 background:#2563eb;
 }
 
-#badges{
+#result{
 margin-top:10px;
-font-size:14px;
-color:#fbbf24;
+min-height:20px;
 }
 </style>
 </head>
@@ -95,7 +91,7 @@ color:#fbbf24;
 
 <h1>🎮 SeoulQuest AI</h1>
 
-<div id="avatar">🤖 Riya Guide: Learn Korean 🇰🇷</div>
+<div id="avatar">🤖 Riya Guide</div>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
@@ -103,174 +99,128 @@ color:#fbbf24;
 <div>Energy: <span id="energy">100</span></div>
 </div>
 
-<div class="bar">
-<div class="fill" id="bar"></div>
-</div>
+<div class="bar"><div class="fill" id="bar"></div></div>
 
-<div id="badges">🏆 Badges: None</div>
-
-<div class="q" id="question"></div>
+<div id="question" class="q"></div>
 <div id="options"></div>
 <div id="result"></div>
-
-<button class="btn" onclick="startStory()">📖 Start Story Mode</button>
 
 </div>
 
 <script>
 
-/* ================= DATA ================= */
-let xp = parseInt(localStorage.getItem("xp")) || 0;
-let energy = parseInt(localStorage.getItem("energy")) || 100;
-let streak = 0;
-let combo = 0;
-let currentAnswer = "";
+let xp=0;
+let energy=100;
+let currentAnswer="";
+let chapter=1;
+let qIndex=0;
 
-/* ================= BADGES ================= */
-let badges = JSON.parse(localStorage.getItem("badges")) || [];
+/* ---------------- STORY CHAPTERS ---------------- */
 
-function unlockBadge(name){
-if(!badges.includes(name)){
-badges.push(name);
-localStorage.setItem("badges", JSON.stringify(badges));
-}
-}
+const story=[
+[
+{q:"Chapter 1: How do you say Hello in Korean?",a:"안녕하세요",
+o:["안녕하세요","감사합니다","학교","사랑"]},
+{q:"How do you say Thank you?",a:"감사합니다",
+o:["감사합니다","안녕","사랑","학교"]}
+],
 
-/* ================= WORD BANK ================= */
-function words(){
-return [
-["Hello","안녕하세요"],
-["Thank you","감사합니다"],
-["Sorry","죄송합니다"],
-["Friend","친구"],
-["Love","사랑"],
-["School","학교"],
-["Book","책"],
-["Water","물"],
-["Food","음식"],
-["Bus","버스"],
-["Train","기차"],
-["City","도시"],
-["Korea","한국"],
-["Seoul","서울"],
-["Game","게임"],
-["Study","공부"]
+[
+{q:"Chapter 2: What is School?",a:"학교",
+o:["학교","집","물","차"]},
+{q:"What is Book?",a:"책",
+o:["책","문","길","사람"]}
+],
+
+[
+{q:"Chapter 3: What is Friend?",a:"친구",
+o:["친구","학교","집","차"]},
+{q:"What is Love?",a:"사랑",
+o:["사랑","물","길","문"]}
+],
+
+[
+{q:"Chapter 4: What is Food?",a:"음식",
+o:["음식","학교","차","길"]},
+{q:"What is Water?",a:"물",
+o:["물","사랑","친구","집"]}
+],
+
+[
+{q:"FINAL CHAPTER: What is Seoul?",a:"서울",
+o:["서울","도쿄","베이징","뉴욕"]}
+]
+
 ];
-}
 
-/* ================= GENERATE ================= */
-function gen(){
-let w = words();
-let item = w[Math.floor(Math.random()*w.length)];
+/* ---------------- LOAD QUESTION ---------------- */
 
-let wrong = w.filter(x=>x[1]!=item[1])
-.sort(()=>Math.random()-0.5)
-.slice(0,3)
-.map(x=>x[1]);
-
-let options = [...wrong,item[1]].sort(()=>Math.random()-0.5);
-
-return {
-q:`What is "${item[0]}" in Korean?`,
-o:options,
-a:item[1]
-};
-}
-
-/* ================= LOAD ================= */
 function load(){
-let q = gen();
-currentAnswer = q.a;
 
-document.getElementById("question").innerText = q.q;
-
-document.getElementById("options").innerHTML =
-q.o.map(op=>`<button class="btn" onclick="check('${op}')">${op}</button>`).join("");
+if(chapter>story.length){
+document.getElementById("question").innerHTML="🎉 STORY COMPLETE!";
+document.getElementById("options").innerHTML="";
+document.getElementById("result").innerHTML="🏆 You finished SeoulQuest AI!";
+return;
 }
 
-/* ================= CHECK ================= */
+let data=story[chapter-1][qIndex];
+
+document.getElementById("question").innerText=data.q;
+currentAnswer=data.a;
+
+let html="";
+data.o.forEach(op=>{
+html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
+});
+
+document.getElementById("options").innerHTML=html;
+
+}
+
+/* ---------------- CHECK ---------------- */
+
 function check(ans){
 
-if(ans === currentAnswer){
+if(ans===currentAnswer){
 
-xp += 10;
-streak++;
-combo++;
-
-document.getElementById("result").innerText = "✅ Correct +10 XP";
-
-/* BADGES SYSTEM */
-if(xp >= 50) unlockBadge("🌱 Beginner");
-if(xp >= 150) unlockBadge("⚡ Learner");
-if(streak >= 3) unlockBadge("🔥 Streak Master");
-if(combo >= 5) unlockBadge("💥 Combo King");
+xp+=10;
+document.getElementById("result").innerText="✅ Correct +10 XP";
 
 }else{
 
-streak = 0;
-combo = 0;
-energy -= 15;
+energy-=15;
+document.getElementById("result").innerText="❌ Wrong";
 
-document.getElementById("result").innerText = "❌ Wrong!";
 }
 
-/* LEVEL SYSTEM */
-let level = Math.floor(xp / 50) + 1;
+qIndex++;
 
-/* SAVE */
-localStorage.setItem("xp", xp);
-localStorage.setItem("energy", energy);
-
-/* GAME OVER */
-if(energy <= 0){
-alert("Game Over! Restarting...");
-xp = 0;
-energy = 100;
+/* chapter complete */
+if(qIndex>=story[chapter-1].length){
+chapter++;
+qIndex=0;
 }
 
-/* UPDATE */
 update();
-updateBadges();
 load();
 }
 
-/* ================= UI UPDATE ================= */
+/* ---------------- UI ---------------- */
+
 function update(){
-document.getElementById("xp").innerText = xp;
-document.getElementById("level").innerText = Math.floor(xp/50)+1;
-document.getElementById("energy").innerText = energy;
 
-document.getElementById("bar").style.width = (xp % 50) * 2 + "%";
+document.getElementById("xp").innerText=xp;
+document.getElementById("level").innerText=Math.floor(xp/50)+1;
+document.getElementById("energy").innerText=energy;
+
+document.getElementById("bar").style.width=(xp%50)*2+"%";
+
 }
 
-/* ================= BADGE UI ================= */
-function updateBadges(){
-document.getElementById("badges").innerText =
-badges.length ? "🏆 Badges: " + badges.join(" | ") : "🏆 Badges: None";
-}
-
-/* ================= STORY MODE ================= */
-function startStory(){
-
-document.getElementById("question").innerText =
-"🇰🇷 Chapter 1: You arrive in Seoul Airport. Say Hello in Korean.";
-
-currentAnswer = "안녕하세요";
-
-document.getElementById("options").innerHTML = `
-<button class="btn" onclick="check('안녕하세요')">안녕하세요</button>
-<button class="btn" onclick="check('감사합니다')">감사합니다</button>
-<button class="btn" onclick="check('사랑')">사랑</button>
-<button class="btn" onclick="check('학교')">학교</button>
-`;
-
-document.getElementById("result").innerText = "📖 Story Mode Started!";
-}
-
-/* ================= INIT ================= */
-update();
-updateBadges();
+/* start */
 load();
+update();
 
 </script>
 
