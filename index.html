@@ -29,17 +29,32 @@ border:1px solid #334155;
 
 h1{color:#38bdf8;}
 
-#avatar{
-background:#111827;
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
+/* CHAT */
+#chatBox{
+margin-bottom:15px;
 }
 
+#userInput{
+width:65%;
+padding:10px;
+border-radius:10px;
+border:none;
+}
+
+#askBtn{
+padding:10px;
+border:none;
+border-radius:10px;
+background:#38bdf8;
+cursor:pointer;
+}
+
+/* TOP */
 .top{
 display:flex;
 justify-content:space-between;
 font-size:14px;
+margin-top:10px;
 }
 
 .bar{
@@ -91,7 +106,12 @@ min-height:20px;
 
 <h1>🎮 SeoulQuest AI</h1>
 
-<div id="avatar">🤖 Riya Guide</div>
+<!-- AI CHAT -->
+<div id="chatBox">
+<input id="userInput" placeholder="Ask Riya in English...">
+<button id="askBtn" onclick="askRiya()">Ask</button>
+<div id="chatResponse" style="margin-top:10px;color:#67e8f9;"></div>
+</div>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
@@ -109,58 +129,71 @@ min-height:20px;
 
 <script>
 
+/* ================= CORE ================= */
 let xp=0;
 let energy=100;
-let currentAnswer="";
 let chapter=1;
 let qIndex=0;
+let currentAnswer="";
 
-/* ---------------- STORY CHAPTERS ---------------- */
+/* ================= AI CHAT ================= */
+function askRiya(){
+
+let input=document.getElementById("userInput").value.toLowerCase();
+let res="";
+
+if(input.includes("hello")){
+res="안녕하세요 (Annyeonghaseyo) = Hello";
+}
+else if(input.includes("thank")){
+res="감사합니다 (Gamsahamnida) = Thank you";
+}
+else if(input.includes("i am student")){
+res="저는 학생입니다 (Jeoneun haksaengimnida) = I am a student";
+}
+else if(input.includes("how are you")){
+res="잘 지내요 (Jal jinaeyo) = I am fine";
+}
+else if(input.includes("love")){
+res="사랑 (Sarang) = Love";
+}
+else{
+res="🤖 Try: hello, thank you, I am student";
+}
+
+document.getElementById("chatResponse").innerText=res;
+}
+
+/* ================= STORY MODE ================= */
 
 const story=[
 [
-{q:"Chapter 1: How do you say Hello in Korean?",a:"안녕하세요",
-o:["안녕하세요","감사합니다","학교","사랑"]},
-{q:"How do you say Thank you?",a:"감사합니다",
-o:["감사합니다","안녕","사랑","학교"]}
+{q:"Chapter 1: How do you say Hello?",a:"안녕하세요",o:["안녕하세요","감사합니다","사랑","학교"]},
+{q:"How do you say Thank you?",a:"감사합니다",o:["감사합니다","안녕","집","물"]}
 ],
 
 [
-{q:"Chapter 2: What is School?",a:"학교",
-o:["학교","집","물","차"]},
-{q:"What is Book?",a:"책",
-o:["책","문","길","사람"]}
+{q:"Chapter 2: What is School?",a:"학교",o:["학교","집","차","물"]},
+{q:"What is Book?",a:"책",o:["책","문","길","사람"]}
 ],
 
 [
-{q:"Chapter 3: What is Friend?",a:"친구",
-o:["친구","학교","집","차"]},
-{q:"What is Love?",a:"사랑",
-o:["사랑","물","길","문"]}
+{q:"Chapter 3: What is Friend?",a:"친구",o:["친구","학교","집","차"]},
+{q:"What is Love?",a:"사랑",o:["사랑","물","길","문"]}
 ],
 
 [
-{q:"Chapter 4: What is Food?",a:"음식",
-o:["음식","학교","차","길"]},
-{q:"What is Water?",a:"물",
-o:["물","사랑","친구","집"]}
-],
-
-[
-{q:"FINAL CHAPTER: What is Seoul?",a:"서울",
-o:["서울","도쿄","베이징","뉴욕"]}
+{q:"Final Chapter: What is Seoul?",a:"서울",o:["서울","도쿄","뉴욕","베이징"]}
 ]
-
 ];
 
-/* ---------------- LOAD QUESTION ---------------- */
+/* ================= LOAD ================= */
 
 function load(){
 
 if(chapter>story.length){
-document.getElementById("question").innerHTML="🎉 STORY COMPLETE!";
+document.getElementById("question").innerHTML="🎉 ALL CHAPTERS COMPLETE!";
 document.getElementById("options").innerHTML="";
-document.getElementById("result").innerHTML="🏆 You finished SeoulQuest AI!";
 return;
 }
 
@@ -178,25 +211,20 @@ document.getElementById("options").innerHTML=html;
 
 }
 
-/* ---------------- CHECK ---------------- */
+/* ================= CHECK ================= */
 
 function check(ans){
 
 if(ans===currentAnswer){
-
 xp+=10;
 document.getElementById("result").innerText="✅ Correct +10 XP";
-
 }else{
-
-energy-=15;
+energy-=10;
 document.getElementById("result").innerText="❌ Wrong";
-
 }
 
 qIndex++;
 
-/* chapter complete */
 if(qIndex>=story[chapter-1].length){
 chapter++;
 qIndex=0;
@@ -206,7 +234,7 @@ update();
 load();
 }
 
-/* ---------------- UI ---------------- */
+/* ================= UI ================= */
 
 function update(){
 
@@ -215,10 +243,9 @@ document.getElementById("level").innerText=Math.floor(xp/50)+1;
 document.getElementById("energy").innerText=energy;
 
 document.getElementById("bar").style.width=(xp%50)*2+"%";
-
 }
 
-/* start */
+/* START */
 load();
 update();
 
