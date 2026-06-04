@@ -69,7 +69,7 @@ color:white;
 cursor:pointer;
 }
 
-.btn:hover{background:#2563eb;}
+.btn:hover{background:#2563eb}
 </style>
 </head>
 
@@ -78,6 +78,14 @@ cursor:pointer;
 <div class="game">
 
 <h1>🎮 SeoulQuest AI</h1>
+
+<!-- MODE BUTTONS -->
+<div>
+<button class="btn" onclick="setMode('daily')">🏠 Daily Life</button>
+<button class="btn" onclick="setMode('restaurant')">🍜 Restaurant</button>
+<button class="btn" onclick="setMode('travel')">✈️ Travel</button>
+<button class="btn" onclick="setMode('shopping')">🛍️ Shopping</button>
+</div>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
@@ -110,17 +118,12 @@ daily:[
 ["I am learning Korean","저는 한국어를 배우고 있습니다"],
 ["I go to school","저는 학교에 갑니다"],
 ["I live in India","저는 인도에 살고 있습니다"],
-["Today is good","오늘은 좋은 날입니다"],
 ["I like studying","저는 공부를 좋아합니다"],
 ["I am tired","저는 피곤합니다"],
 ["I wake up early","저는 일찍 일어납니다"],
 ["I drink water","저는 물을 마십니다"],
 ["I am happy","저는 행복합니다"],
-["I am hungry","저는 배고파요"],
-["I go home","저는 집에 갑니다"],
-["I am busy","저는 바쁩니다"],
-["I am learning hard","저는 열심히 공부합니다"],
-["I like Korea","저는 한국을 좋아합니다"]
+["I go home","저는 집에 갑니다"]
 ],
 
 restaurant:[
@@ -130,15 +133,10 @@ restaurant:[
 ["It is delicious","맛있어요"],
 ["I am hungry","배고파요"],
 ["I want rice","밥 주세요"],
-["No spicy food","매운 음식 안 돼요"],
-["I am full","배불러요"],
 ["Check please","계산해 주세요"],
 ["Too expensive","너무 비싸요"],
 ["Coffee please","커피 주세요"],
-["I like Korean food","한국 음식 좋아요"],
-["I will order this","이것 주세요"],
-["I will come again","다시 올게요"],
-["Restaurant is good","식당 좋아요"]
+["I will come again","다시 올게요"]
 ],
 
 travel:[
@@ -151,12 +149,7 @@ travel:[
 ["I need help","도와 주세요"],
 ["I am tourist","관광객입니다"],
 ["Where is hotel","호텔 어디예요"],
-["I want ticket","표 주세요"],
-["I arrived","도착했습니다"],
-["I travel Korea","한국 여행해요"],
-["It is far","멀어요"],
-["How much time","얼마 걸려요"],
-["Please wait","기다려 주세요"]
+["I arrived","도착했습니다"]
 ],
 
 shopping:[
@@ -169,24 +162,22 @@ shopping:[
 ["Size please","사이즈 있어요"],
 ["Help me","도와 주세요"],
 ["I want clothes","옷 사고 싶어요"],
-["Where is cashier","계산대 어디예요"],
-["I will take this","이것 가져갈게요"],
-["Bag please","가방 주세요"],
-["It is pretty","예뻐요"],
-["I will pay","지불할게요"],
-["Thank you","감사합니다"]
+["I will pay","지불할게요"]
 ]
 
 };
 
-/* ================= GAME ================= */
+/* ================= MODE SWITCH ================= */
 
 function setMode(m){
 mode=m;
 load();
 }
 
+/* ================= GENERATE ================= */
+
 function gen(){
+
 let list=data[mode];
 let item=list[Math.floor(Math.random()*list.length)];
 
@@ -201,7 +192,10 @@ let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
 return {q:item[0],a:item[1],o:options};
 }
 
+/* ================= LOAD ================= */
+
 function load(){
+
 let g=gen();
 currentAnswer=g.a;
 
@@ -214,6 +208,8 @@ html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 
 document.getElementById("options").innerHTML=html;
 }
+
+/* ================= CHECK ================= */
 
 function check(ans){
 
@@ -235,7 +231,10 @@ update();
 load();
 }
 
+/* ================= UPDATE ================= */
+
 function update(){
+
 document.getElementById("xp").innerText=xp;
 document.getElementById("energy").innerText=energy;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
