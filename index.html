@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI - Next Level</title>
+<title>SeoulQuest AI v3</title>
 
 <style>
 body{
@@ -65,26 +65,14 @@ cursor:pointer;
 
 .btn:hover{background:#2563eb;}
 
-.mode{
-display:flex;
-gap:6px;
-flex-wrap:wrap;
-justify-content:center;
-margin-bottom:10px;
-}
-
 .mode button{
+margin:4px;
 padding:8px;
 border-radius:8px;
 border:none;
 background:#334155;
 color:white;
 cursor:pointer;
-font-size:12px;
-}
-
-.mode button:hover{
-background:#2563eb;
 }
 </style>
 </head>
@@ -93,7 +81,7 @@ background:#2563eb;
 
 <div class="game">
 
-<h1>🎮 SeoulQuest AI 2.0</h1>
+<h1>🎮 SeoulQuest AI v3</h1>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
@@ -103,12 +91,11 @@ background:#2563eb;
 
 <div class="bar"><div class="fill" id="bar"></div></div>
 
-<div class="mode">
-<button onclick="setMode('vocab')">📘 Vocabulary</button>
-<button onclick="setMode('restaurant')">🍜 Restaurant</button>
-<button onclick="setMode('airport')">✈️ Airport</button>
-<button onclick="setMode('shopping')">🛍️ Shopping</button>
-<button onclick="setMode('story')">📖 Story Mode</button>
+<div>
+<button onclick="setMode('vocab')">📘 Vocab</button>
+<button onclick="setMode('restaurant')">🍜 Food</button>
+<button onclick="setMode('airport')">✈️ Travel</button>
+<button onclick="setMode('shopping')">🛍️ Shop</button>
 </div>
 
 <div id="question"></div>
@@ -121,79 +108,50 @@ background:#2563eb;
 
 let xp=0;
 let energy=100;
-let currentAnswer="";
 let mode="vocab";
+let currentAnswer="";
 
-/* ================= BIGGER WORD BANK ================= */
+/* ================= FULL 10 WORD BANKS ================= */
 
 const vocab=[
-["Hello","안녕하세요"],
-["Good morning","좋은 아침"],
-["Good night","안녕히 주무세요"],
-["Thank you","감사합니다"],
-["Sorry","죄송합니다"],
-["Friend","친구"],
-["Love","사랑"],
-["School","학교"],
-["Food","음식"],
-["Water","물"],
-["Bus","버스"],
-["Train","기차"],
-["Airport","공항"],
-["Restaurant","식당"],
-["Order","주문"],
-["Price","가격"],
-["Ticket","표"],
-["Where","어디"],
-["When","언제"],
-["Why","왜"]
+["Hello","안녕하세요"],["Thank you","감사합니다"],
+["Sorry","죄송합니다"],["Friend","친구"],
+["Love","사랑"],["School","학교"],
+["Book","책"],["Water","물"],
+["Food","음식"],["Study","공부"]
 ];
 
 const restaurant=[
-["I want to order","주문하고 싶어요"],
-["Menu please","메뉴 주세요"],
-["Delicious","맛있어요"],
-["Water please","물 주세요"],
-["Bill please","계산서 주세요"]
+["Menu","메뉴"],["Order","주문"],["Delicious","맛있다"],
+["Water","물"],["Bill","계산서"],
+["Eat","먹다"],["Drink","마시다"],
+["Hungry","배고프다"],["Spicy","매워요"],["Chef","요리사"]
 ];
 
 const airport=[
-["Where is airport?","공항 어디예요?"],
-["Check-in","체크인"],
-["Passport","여권"],
-["Boarding","탑승"],
-["Flight","비행기"]
+["Airport","공항"],["Passport","여권"],["Flight","비행기"],
+["Ticket","표"],["Gate","탑승구"],
+["Boarding","탑승"],["Luggage","짐"],
+["Check-in","체크인"],["Arrival","도착"],["Departure","출발"]
 ];
 
 const shopping=[
-["How much?","얼마예요?"],
-["Too expensive","너무 비싸요"],
-["Discount","할인"],
-["Buy this","이거 사요"],
-["Cash","현금"]
+["Price","가격"],["Cheap","싸다"],["Expensive","비싸다"],
+["Discount","할인"],["Buy","구매"],
+["Sell","팔다"],["Cash","현금"],
+["Card","카드"],["Store","가게"],["Size","사이즈"]
 ];
 
-/* ================= STORY ================= */
-
-const story=[
-"Chapter 1: You arrive in Seoul. Say Hello",
-"Chapter 2: You meet a Korean friend",
-"Chapter 3: You order food at a restaurant",
-"Chapter 4: You go shopping in Myeongdong"
-];
-
-let storyIndex=0;
-
-/* ================= MODE SWITCH ================= */
+/* ================= MODE ================= */
 
 function setMode(m){
 mode=m;
 load();
 }
 
-/* ================= GENERATE ================= */
+/* ================= GENERATOR ================= */
 
-function getBank(){
+function bank(){
 if(mode==="restaurant") return restaurant;
 if(mode==="airport") return airport;
 if(mode==="shopping") return shopping;
@@ -204,27 +162,21 @@ return vocab;
 
 function load(){
 
-let bank=getBank();
+let data=bank();
 
-let item=bank[Math.floor(Math.random()*bank.length)];
+let item=data[Math.floor(Math.random()*data.length)];
 
-let wrong=bank.filter(x=>x[1]!=item[1])
+let wrong=data.filter(x=>x[1]!=item[1])
 .sort(()=>Math.random()-0.5)
 .slice(0,3)
 .map(x=>x[1]);
 
 let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
 
-if(mode==="story"){
-document.getElementById("question").innerText=story[storyIndex];
-currentAnswer="안녕하세요";
-options=["안녕하세요","감사합니다","사랑","학교"];
-}
-else{
 document.getElementById("question").innerText=
 `What is "${item[0]}" in Korean?`;
+
 currentAnswer=item[1];
-}
 
 let html="";
 options.forEach(op=>{
@@ -246,12 +198,6 @@ energy-=10;
 document.getElementById("result").innerText="❌ Wrong";
 }
 
-/* STORY PROGRESS */
-if(mode==="story" && ans===currentAnswer){
-storyIndex++;
-if(storyIndex>=story.length) storyIndex=0;
-}
-
 if(energy<=0){
 alert("Game Over");
 xp=0;
@@ -269,8 +215,7 @@ document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
 document.getElementById("energy").innerText=energy;
 
-let bar=(xp%50)*2;
-document.getElementById("bar").style.width=bar+"%";
+document.getElementById("bar").style.width=(xp%50)*2+"%";
 }
 
 load();
