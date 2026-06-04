@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI v3</title>
+<title>SeoulQuest AI FINAL</title>
 
 <style>
 body{
@@ -17,14 +17,14 @@ align-items:center;
 height:100vh;
 }
 
-.game{
+.app{
 width:92%;
-max-width:850px;
+max-width:900px;
 background:rgba(15,23,42,0.95);
 padding:20px;
 border-radius:20px;
-text-align:center;
 border:1px solid #334155;
+text-align:center;
 }
 
 h1{color:#38bdf8;}
@@ -32,7 +32,7 @@ h1{color:#38bdf8;}
 .top{
 display:flex;
 justify-content:space-between;
-font-size:14px;
+font-size:13px;
 margin-bottom:10px;
 }
 
@@ -49,138 +49,170 @@ margin-bottom:10px;
 height:100%;
 width:0%;
 background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+transition:0.3s;
 }
 
-.btn{
-display:block;
-width:100%;
-padding:12px;
-margin:8px 0;
+button{
+padding:10px;
+margin:5px;
 border:none;
-border-radius:10px;
-background:#1e293b;
-color:white;
-cursor:pointer;
-}
-
-.btn:hover{background:#2563eb;}
-
-.mode button{
-margin:4px;
-padding:8px;
 border-radius:8px;
-border:none;
 background:#334155;
 color:white;
 cursor:pointer;
+}
+
+button:hover{background:#2563eb;}
+
+.question{
+font-size:20px;
+margin:15px 0;
+}
+
+.badges{
+margin-top:10px;
+font-size:13px;
+color:#fbbf24;
 }
 </style>
 </head>
 
 <body>
 
-<div class="game">
+<div class="app">
 
-<h1>🎮 SeoulQuest AI v3</h1>
+<h1>🎮 SeoulQuest AI FINAL</h1>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
 <div>Level: <span id="level">1</span></div>
 <div>Energy: <span id="energy">100</span></div>
+<div>✔ Correct: <span id="correct">0</span></div>
 </div>
 
 <div class="bar"><div class="fill" id="bar"></div></div>
 
 <div>
+<button onclick="setMode('story')">📖 Story</button>
 <button onclick="setMode('vocab')">📘 Vocab</button>
-<button onclick="setMode('restaurant')">🍜 Food</button>
-<button onclick="setMode('airport')">✈️ Travel</button>
-<button onclick="setMode('shopping')">🛍️ Shop</button>
+<button onclick="setMode('role')">🎭 Roleplay</button>
 </div>
 
-<div id="question"></div>
+<div class="question" id="question"></div>
 <div id="options"></div>
 <div id="result"></div>
+
+<div class="badges" id="badges">🏅 Badges: None</div>
 
 </div>
 
 <script>
 
+/* ================= STATE ================= */
+
 let xp=0;
 let energy=100;
-let mode="vocab";
+let correct=0;
+let mode="story";
+let step=0;
 let currentAnswer="";
 
-/* ================= FULL 10 WORD BANKS ================= */
+/* load saved */
+if(localStorage.getItem("sqxp")){
+xp=parseInt(localStorage.getItem("sqxp"));
+correct=parseInt(localStorage.getItem("sqcorrect"));
+}
+
+/* ================= BADGES ================= */
+
+let badges=[];
+
+function checkBadges(){
+
+if(correct>=1 && !badges.includes("First Win")) badges.push("First Win 🥇");
+if(xp>=100 && !badges.includes("XP Rookie")) badges.push("XP Rookie ⚡");
+if(step>=2 && mode==="story") badges.push("Story Learner 📖");
+if(correct>=10) badges.push("Korean Starter 🇰🇷");
+
+document.getElementById("badges").innerText =
+"🏅 Badges: " + (badges.join(", ") || "None");
+}
+
+/* ================= DATA ================= */
 
 const vocab=[
 ["Hello","안녕하세요"],["Thank you","감사합니다"],
-["Sorry","죄송합니다"],["Friend","친구"],
-["Love","사랑"],["School","학교"],
-["Book","책"],["Water","물"],
-["Food","음식"],["Study","공부"]
+["School","학교"],["Book","책"],["Study","공부"],
+["Friend","친구"],["Water","물"],["Food","음식"],
+["Love","사랑"],["Teacher","선생님"]
 ];
 
-const restaurant=[
-["Menu","메뉴"],["Order","주문"],["Delicious","맛있다"],
-["Water","물"],["Bill","계산서"],
-["Eat","먹다"],["Drink","마시다"],
-["Hungry","배고프다"],["Spicy","매워요"],["Chef","요리사"]
+const story=[
+{q:"You arrive in Seoul. Say Hello",a:"안녕하세요",o:["안녕하세요","감사합니다","학교"]},
+{q:"You meet a friend",a:"친구",o:["친구","물","책"]},
+{q:"You are hungry",a:"배고파요",o:["배고파요","학교","사랑"]}
 ];
 
-const airport=[
-["Airport","공항"],["Passport","여권"],["Flight","비행기"],
-["Ticket","표"],["Gate","탑승구"],
-["Boarding","탑승"],["Luggage","짐"],
-["Check-in","체크인"],["Arrival","도착"],["Departure","출발"]
-];
-
-const shopping=[
-["Price","가격"],["Cheap","싸다"],["Expensive","비싸다"],
-["Discount","할인"],["Buy","구매"],
-["Sell","팔다"],["Cash","현금"],
-["Card","카드"],["Store","가게"],["Size","사이즈"]
+const role=[
+{q:"Restaurant: Ask menu",a:"메뉴 주세요",o:["메뉴 주세요","학교","책"]},
+{q:"Airport: Where is gate?",a:"탑승구 어디예요",o:["탑승구 어디예요","물","사랑"]},
+{q:"Shop: price?",a:"얼마예요",o:["얼마예요","친구","학교"]}
 ];
 
 /* ================= MODE ================= */
 
 function setMode(m){
 mode=m;
+step=0;
 load();
-}
-
-/* ================= GENERATOR ================= */
-
-function bank(){
-if(mode==="restaurant") return restaurant;
-if(mode==="airport") return airport;
-if(mode==="shopping") return shopping;
-return vocab;
 }
 
 /* ================= LOAD ================= */
 
 function load(){
 
-let data=bank();
+let data;
 
+if(mode==="vocab") data=vocab;
+if(mode==="story") data=story;
+if(mode==="role") data=role;
+
+/* STORY / ROLE */
+if(mode!=="vocab"){
+
+let item=data[step % data.length];
+
+document.getElementById("question").innerText=item.q;
+currentAnswer=item.a;
+
+renderOptions(item.o);
+return;
+}
+
+/* VOCAB */
 let item=data[Math.floor(Math.random()*data.length)];
-
-let wrong=data.filter(x=>x[1]!=item[1])
-.sort(()=>Math.random()-0.5)
-.slice(0,3)
-.map(x=>x[1]);
-
-let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
-
-document.getElementById("question").innerText=
-`What is "${item[0]}" in Korean?`;
 
 currentAnswer=item[1];
 
+let wrong=data.filter(x=>x[1]!==item[1])
+.slice(0,3)
+.map(x=>x[1]);
+
+renderOptions([...wrong,item[1]]);
+
+document.getElementById("question").innerText =
+`What is "${item[0]}" in Korean?`;
+}
+
+/* ================= OPTIONS ================= */
+
+function renderOptions(arr){
+
+arr=arr.sort(()=>Math.random()-0.5);
+
 let html="";
-options.forEach(op=>{
-html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
+arr.forEach(op=>{
+html+=`<button onclick="check('${op}')">${op}</button>`;
 });
 
 document.getElementById("options").innerHTML=html;
@@ -191,35 +223,56 @@ document.getElementById("options").innerHTML=html;
 function check(ans){
 
 if(ans===currentAnswer){
+
 xp+=10;
+correct++;
+step++;
+
 document.getElementById("result").innerText="✅ Correct +10 XP";
+
 }else{
 energy-=10;
-document.getElementById("result").innerText="❌ Wrong";
+document.getElementById("result").innerText="❌ Wrong -10 Energy";
 }
 
 if(energy<=0){
 alert("Game Over");
 xp=0;
 energy=100;
+correct=0;
+step=0;
 }
 
+save();
 update();
+checkBadges();
 load();
+}
+
+/* ================= SAVE ================= */
+
+function save(){
+localStorage.setItem("sqxp",xp);
+localStorage.setItem("sqcorrect",correct);
 }
 
 /* ================= UPDATE ================= */
 
 function update(){
+
 document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
 document.getElementById("energy").innerText=energy;
+document.getElementById("correct").innerText=correct;
 
 document.getElementById("bar").style.width=(xp%50)*2+"%";
 }
 
+/* ================= INIT ================= */
+
 load();
 update();
+checkBadges();
 
 </script>
 
