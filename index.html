@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI Ultimate</title>
+<title>SeoulQuest AI</title>
 
 <style>
 body{
@@ -14,20 +14,48 @@ color:white;
 display:flex;
 justify-content:center;
 align-items:center;
-min-height:100vh;
+height:100vh;
 }
 
 .game{
-width:92%;
-max-width:900px;
-background:rgba(15,23,42,0.95);
+width:95%;
+max-width:850px;
+background:#0f172a;
 padding:20px;
 border-radius:20px;
-text-align:center;
 border:1px solid #334155;
+text-align:center;
 }
 
 h1{color:#38bdf8;}
+
+.top{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+font-size:14px;
+}
+
+.bar{
+width:100%;
+height:10px;
+background:#1e293b;
+border-radius:10px;
+overflow:hidden;
+margin:10px 0;
+}
+
+.fill{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+transition:0.3s;
+}
+
+.q{
+font-size:18px;
+margin:15px 0;
+}
 
 .btn{
 display:block;
@@ -41,35 +69,24 @@ color:white;
 cursor:pointer;
 }
 
-.btn:hover{background:#2563eb;}
-
-#box,#chat{
-margin-top:10px;
+.btn:hover{
+background:#2563eb;
+}
+.mode{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+justify-content:center;
+margin-bottom:10px;
 }
 
-input{
-width:100%;
-padding:10px;
+.smallBtn{
+padding:8px 12px;
+background:#111827;
+border:1px solid #334155;
 border-radius:10px;
-border:none;
-margin-top:10px;
-}
-
-.panel{
-margin-top:15px;
-font-size:13px;
-color:#93c5fd;
-border-top:1px solid #334155;
-padding-top:10px;
-}
-
-.badge{
-display:inline-block;
-padding:5px 10px;
-margin:3px;
-border-radius:20px;
-background:#1e40af;
-font-size:12px;
+cursor:pointer;
+color:white;
 }
 </style>
 </head>
@@ -78,193 +95,148 @@ font-size:12px;
 
 <div class="game">
 
-<h1>🎮 SeoulQuest AI Ultimate</h1>
+<h1>🎮 SeoulQuest AI</h1>
 
-<div class="panel">
-XP: <span id="xp">0</span> |
-Level: <span id="level">1</span> |
-Energy: <span id="energy">100</span>
+<div class="top">
+<div>XP: <span id="xp">0</span></div>
+<div>Level: <span id="level">1</span></div>
+<div>Story: <span id="story">1</span></div>
 </div>
 
-<h3>Choose Mode</h3>
+<div class="bar">
+<div class="fill" id="bar"></div>
+</div>
 
-<div id="box"></div>
+<!-- MODE SELECT -->
+<div class="mode">
+<button class="smallBtn" onclick="setMode('restaurant')">🍜 Restaurant</button>
+<button class="smallBtn" onclick="setMode('airport')">✈️ Airport</button>
+<button class="smallBtn" onclick="setMode('cafe')">☕ Café</button>
+<button class="smallBtn" onclick="setMode('school')">🎓 School</button>
+<button class="smallBtn" onclick="storyMode()">📖 Story Mode</button>
+</div>
 
-<div id="chat"></div>
-
-<input id="input" placeholder="Ask Riya or type..." />
-
-<button class="btn" onclick="askRiya()">🤖 Ask Riya</button>
-
+<div class="q" id="question">Select a mode to start</div>
+<div id="options"></div>
 <div id="result"></div>
-
-<div class="panel">
-<h4>🏆 Achievements</h4>
-<div id="badges"></div>
-
-<p>Correct: <span id="correct">0</span> |
-Wrong: <span id="wrong">0</span> |
-Accuracy: <span id="acc">0</span>%</p>
-</div>
 
 </div>
 
 <script>
 
-/* CORE */
-let xp=0,energy=100,correct=0,wrong=0;
-let badges=[];
+let xp=0;
+let currentAnswer="";
+let mode="restaurant";
+let storyLevel=1;
 
-/* SCENARIOS */
-const roles={
-airport:[
-{q:"✈️ Name?",o:["저는 리야입니다","안녕하세요","물","학교"],a:"저는 리야입니다"},
-{q:"✈️ Where?",o:["한국에 갑니다","책","커피","친구"],a:"한국에 갑니다"}
-],
+/* ================= VOCAB BY CONTEXT ================= */
+const data = {
+
 restaurant:[
-{q:"🍜 Order?",o:["비빔밥 주세요","학교","물","게임"],a:"비빔밥 주세요"},
-{q:"🍜 Drink?",o:["물 주세요","책","서울","친구"],a:"물 주세요"}
+{q:"You enter a restaurant. How do you say Hello?",a:"안녕하세요",o:["안녕하세요","감사합니다","학교","사랑"]},
+{q:"How do you say 'Water'?",a:"물",o:["물","버스","책","집"]},
+{q:"How do you say 'Food'?",a:"음식",o:["음식","차","길","공항"]}
 ],
-friend:[
-{q:"👋 Name?",o:["저는 리야입니다","물","학교","서울"],a:"저는 리야입니다"},
-{q:"👋 Meet?",o:["만나서 반갑습니다","게임","물","책"],a:"만나서 반갑습니다"}
+
+airport:[
+{q:"At airport, how do you say Hello?",a:"안녕하세요",o:["안녕하세요","음식","책","학교"]},
+{q:"How do you say 'Airplane'?",a:"비행기",o:["비행기","버스","시장","물"]},
+{q:"How do you say 'Airport'?",a:"공항",o:["공항","집","커피","책"]}
 ],
-shopping:[
-{q:"🛍️ Price?",o:["이거 얼마예요?","학교","물","친구"],a:"이거 얼마예요?"}
+
+cafe:[
+{q:"At café, how do you greet staff?",a:"안녕하세요",o:["안녕하세요","비행기","학교","시장"]},
+{q:"How do you say 'Coffee'?",a:"커피",o:["커피","물","집","책"]},
+{q:"How do you say 'Tea'?",a:"차",o:["차","버스","학교","길"]}
+],
+
+school:[
+{q:"At school, greet teacher?",a:"안녕하세요",o:["안녕하세요","물","시장","비행기"]},
+{q:"How do you say 'Student'?",a:"학생",o:["학생","집","커피","길"]},
+{q:"How do you say 'Book'?",a:"책",o:["책","차","버스","공항"]}
 ]
 };
 
-let mode="";
-let i=0;
-
-/* BADGES */
-function addBadge(b){
-if(!badges.includes(b)) badges.push(b);
-document.getElementById("badges").innerHTML =
-badges.map(x=>`<span class="badge">${x}</span>`).join("");
-}
-
-/* MENU */
-function menu(){
-document.getElementById("box").innerHTML=`
-<button class="btn" onclick="start('airport')">✈️ Airport</button>
-<button class="btn" onclick="start('restaurant')">🍜 Restaurant</button>
-<button class="btn" onclick="start('friend')">👋 Friend</button>
-<button class="btn" onclick="start('shopping')">🛍️ Shopping</button>
-<button class="btn" onclick="story()">📖 Story Mode</button>
-`;
-document.getElementById("chat").innerHTML="";
-}
-
-/* START ROLE */
-function start(m){
+/* ================= MODE ================= */
+function setMode(m){
 mode=m;
-i=0;
 load();
 }
 
-/* LOAD */
+/* ================= STORY MODE ================= */
+function storyMode(){
+
+let stories=[
+"Chapter 1: You arrive in Seoul 🇰🇷",
+"Chapter 2: You meet a Korean friend 👋",
+"Chapter 3: You enter a café ☕",
+"Chapter 4: You travel by subway 🚇"
+];
+
+document.getElementById("question").innerText=stories[storyLevel-1];
+
+document.getElementById("options").innerHTML=`
+<button class="btn" onclick="nextStory()">Continue</button>
+`;
+
+}
+
+/* ================= STORY NEXT ================= */
+function nextStory(){
+
+xp+=20;
+storyLevel++;
+
+if(storyLevel>4){
+storyLevel=1;
+}
+
+update();
+storyMode();
+}
+
+/* ================= LOAD QUESTION ================= */
 function load(){
-let s=roles[mode][i];
-let html=`<h3>${s.q}</h3>`;
-s.o.forEach(op=>{
+
+let list=data[mode];
+let item=list[Math.floor(Math.random()*list.length)];
+
+currentAnswer=item.a;
+
+document.getElementById("question").innerText=item.q;
+
+let html="";
+item.o.forEach(op=>{
 html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
-document.getElementById("box").innerHTML=html;
+
+document.getElementById("options").innerHTML=html;
 }
 
-/* CHECK */
+/* ================= CHECK ================= */
 function check(ans){
-let s=roles[mode][i];
 
-if(ans===s.a){
+if(ans===currentAnswer){
 xp+=10;
-correct++;
-if(correct===1) addBadge("🥇 First Win");
-if(correct===5) addBadge("⚡ Fast Learner");
+document.getElementById("result").innerText="✅ Correct +10 XP";
 }else{
-energy-=10;
-wrong++;
+document.getElementById("result").innerText="❌ Wrong";
 }
 
-i++;
 update();
-
-if(i>=roles[mode].length){
-menu();
-}else load();
+load();
 }
 
-/* STORY MODE */
-function story(){
-document.getElementById("box").innerHTML=`
-<h3>📖 Chapter 1: Arrive in Seoul</h3>
-<button class="btn" onclick="nextStory()">Next</button>
-`;
-}
-
-let chapter=1;
-
-function nextStory(){
-chapter++;
-
-if(chapter===2){
-document.getElementById("box").innerHTML=
-"<h3>👋 Meet a Friend</h3><p>안녕하세요 = Hello</p>";
-}
-else if(chapter===3){
-document.getElementById("box").innerHTML=
-"<h3>🍜 Restaurant</h3><p>비빔밥 주세요 = Bibimbap please</p>";
-}
-else{
-document.getElementById("box").innerHTML=
-"<h3>🎉 Story Completed!</h3>";
-}
-}
-
-/* RIYA CHAT */
-function askRiya(){
-let text=document.getElementById("input").value.toLowerCase();
-let chat=document.getElementById("chat");
-
-chat.innerHTML+=`<div>👤 You: ${text}</div>`;
-
-let res="";
-
-if(text.includes("hello")){
-res="안녕하세요 = Hello 👋";
-}
-else if(text.includes("hungry")){
-res="배고파요 = I am hungry 🍜";
-}
-else if(text.includes("name")){
-res="저는 리야입니다 = I am Riya 🤖";
-}
-else{
-res="Try: hello, name, hungry 😊";
-}
-
-chat.innerHTML+=`<div>🤖 Riya: ${res}</div>`;
-document.getElementById("input").value="";
-}
-
-/* UPDATE */
+/* ================= UPDATE ================= */
 function update(){
+
 document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
-document.getElementById("energy").innerText=energy;
+document.getElementById("story").innerText=storyLevel;
 
-document.getElementById("correct").innerText=correct;
-document.getElementById("wrong").innerText=wrong;
-
-let total=correct+wrong;
-let acc=total?Math.round((correct/total)*100):0;
-document.getElementById("acc").innerText=acc;
+let bar=(xp%50)*2;
+document.getElementById("bar").style.width=bar+"%";
 }
-
-/* START */
-menu();
-update();
 
 </script>
 
