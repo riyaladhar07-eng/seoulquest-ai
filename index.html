@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI - Real Korean Learning</title>
+<title>SeoulQuest AI</title>
 
 <style>
 body{
 margin:0;
-font-family:Arial;
-background:#0b1220;
+font-family:Arial,sans-serif;
+background:linear-gradient(to bottom,#020617,#0f172a,#000);
 color:white;
 display:flex;
 justify-content:center;
@@ -17,16 +17,17 @@ align-items:center;
 height:100vh;
 }
 
-.app{
-width:90%;
-max-width:900px;
-background:#0f172a;
+.game{
+width:92%;
+max-width:850px;
+background:rgba(15,23,42,0.95);
 padding:20px;
-border-radius:16px;
-border:1px solid #1e293b;
+border-radius:20px;
+text-align:center;
+border:1px solid #334155;
 }
 
-h1{color:#38bdf8;text-align:center}
+h1{color:#38bdf8;}
 
 .top{
 display:flex;
@@ -35,226 +36,214 @@ font-size:14px;
 margin-bottom:10px;
 }
 
-.card{
-background:#111827;
-padding:15px;
-border-radius:12px;
-margin-top:10px;
+.bar{
+width:100%;
+height:10px;
+background:#1e293b;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:10px;
 }
 
-button{
-padding:10px;
-margin:5px;
+.fill{
+height:100%;
+background:linear-gradient(90deg,#38bdf8,#0ea5e9);
+width:0%;
+transition:0.3s;
+}
+
+.q{
+font-size:20px;
+margin:15px 0;
+}
+
+.btn{
+display:block;
 width:100%;
+padding:12px;
+margin:8px 0;
 border:none;
-border-radius:8px;
+border-radius:10px;
 background:#1e293b;
 color:white;
 cursor:pointer;
 }
 
-button:hover{background:#2563eb}
-
-.progress{
-height:10px;
-background:#1e293b;
-border-radius:10px;
-overflow:hidden;
-margin-top:10px;
-}
-
-.fill{
-height:100%;
-width:0%;
-background:#38bdf8;
-}
+.btn:hover{background:#2563eb;}
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="game">
 
-<h1>🇰🇷 SeoulQuest AI (Real Korean Learning Engine)</h1>
+<h1>🎮 SeoulQuest AI</h1>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
 <div>Level: <span id="level">1</span></div>
-<div>Correct: <span id="correct">0</span></div>
+<div>Energy: <span id="energy">100</span></div>
 </div>
 
-<div class="card">
-<div id="question">Select a mode</div>
+<div class="bar">
+<div class="fill" id="bar"></div>
+</div>
+
+<div class="q" id="question"></div>
 <div id="options"></div>
 <div id="result"></div>
-
-<div class="progress"><div class="fill" id="bar"></div></div>
-</div>
-
-<button onclick="setMode('daily')">🌍 Daily Life Korean</button>
-<button onclick="setMode('restaurant')">🍜 Restaurant</button>
-<button onclick="setMode('travel')">✈️ Travel</button>
-<button onclick="setMode('shopping')">🛍️ Shopping</button>
 
 </div>
 
 <script>
 
 let xp=0;
-let correct=0;
-let mode="daily";
+let energy=100;
 let currentAnswer="";
+let mode="daily";
 
-/* ================= REAL SENTENCE BANK (NO REPETITION) ================= */
-
+/* ================= FULL DATA ================= */
 const data = {
 
 daily:[
-{
-q:"How do you say: 'Nice to meet you, I am a student'?",
-a:"만나서 반갑습니다 저는 학생입니다",
-o:[
-"만나서 반갑습니다 저는 학생입니다",
-"저는 배고파요",
-"학교 갑니다",
-"책 읽어요"
-]
-},
-{
-q:"How do you say: 'I am learning Korean'?",
-a:"저는 한국어를 배우고 있습니다",
-o:[
-"저는 한국어를 배우고 있습니다",
-"물 주세요",
-"음식 맛있어요",
-"친구 만나요"
-]
-}
+["I am a student","저는 학생입니다"],
+["I am learning Korean","저는 한국어를 배우고 있습니다"],
+["I go to school","저는 학교에 갑니다"],
+["I live in India","저는 인도에 살고 있습니다"],
+["Today is good","오늘은 좋은 날입니다"],
+["I like studying","저는 공부를 좋아합니다"],
+["I am tired","저는 피곤합니다"],
+["I wake up early","저는 일찍 일어납니다"],
+["I drink water","저는 물을 마십니다"],
+["I am happy","저는 행복합니다"],
+["I am hungry","저는 배고파요"],
+["I go home","저는 집에 갑니다"],
+["I am busy","저는 바쁩니다"],
+["I am learning hard","저는 열심히 공부합니다"],
+["I like Korea","저는 한국을 좋아합니다"]
 ],
 
 restaurant:[
-{
-q:"You want to politely ask for food",
-a:"음식 좀 주세요",
-o:[
-"음식 좀 주세요",
-"학교 갑니다",
-"책 있어요",
-"나는 학생입니다"
-]
-},
-{
-q:"How do you say 'This is delicious'?",
-a:"이거 정말 맛있어요",
-o:[
-"이거 정말 맛있어요",
-"안녕하세요",
-"저는 친구입니다",
-"공부합니다"
-]
-}
+["I want food","음식 주세요"],
+["Menu please","메뉴 주세요"],
+["Water please","물 주세요"],
+["It is delicious","맛있어요"],
+["I am hungry","배고파요"],
+["I want rice","밥 주세요"],
+["No spicy food","매운 음식 안 돼요"],
+["I am full","배불러요"],
+["Check please","계산해 주세요"],
+["Too expensive","너무 비싸요"],
+["Coffee please","커피 주세요"],
+["I like Korean food","한국 음식 좋아요"],
+["I will order this","이것 주세요"],
+["I will come again","다시 올게요"],
+["Restaurant is good","식당 좋아요"]
 ],
 
 travel:[
-{
-q:"At airport: ask where gate is",
-a:"탑승구가 어디예요",
-o:[
-"탑승구가 어디예요",
-"책 읽어요",
-"음식 주세요",
-"친구 만나요"
-]
-},
-{
-q:"How do you say 'I want to go to Seoul'?",
-a:"서울에 가고 싶어요",
-o:[
-"서울에 가고 싶어요",
-"학교입니다",
-"물 주세요",
-"맛있어요"
-]
-}
+["Where is airport","공항 어디예요"],
+["I want Seoul","서울 가고 싶어요"],
+["Give directions","길 알려 주세요"],
+["I am lost","길을 잃었어요"],
+["Where is station","역 어디예요"],
+["I take bus","버스 탈게요"],
+["I need help","도와 주세요"],
+["I am tourist","관광객입니다"],
+["Where is hotel","호텔 어디예요"],
+["I want ticket","표 주세요"],
+["I arrived","도착했습니다"],
+["I travel Korea","한국 여행해요"],
+["It is far","멀어요"],
+["How much time","얼마 걸려요"],
+["Please wait","기다려 주세요"]
 ],
 
 shopping:[
-{
-q:"Ask price politely",
-a:"이거 얼마예요",
-o:[
-"이거 얼마예요",
-"저는 학생입니다",
-"친구 만나요",
-"학교 갑니다"
-]
-},
-{
-q:"Say 'I want to buy this'",
-a:"이거 사고 싶어요",
-o:[
-"이거 사고 싶어요",
-"물 주세요",
-"책 읽어요",
-"안녕하세요"
-]
-}
+["How much is this","이거 얼마예요"],
+["I want this","이거 주세요"],
+["Discount please","할인 있어요"],
+["It is expensive","비싸요"],
+["I will buy","살게요"],
+["I like this","좋아요"],
+["Size please","사이즈 있어요"],
+["Help me","도와 주세요"],
+["I want clothes","옷 사고 싶어요"],
+["Where is cashier","계산대 어디예요"],
+["I will take this","이것 가져갈게요"],
+["Bag please","가방 주세요"],
+["It is pretty","예뻐요"],
+["I will pay","지불할게요"],
+["Thank you","감사합니다"]
 ]
 
 };
 
-/* ================= MODE ================= */
+/* ================= GAME ================= */
 
 function setMode(m){
 mode=m;
 load();
 }
 
-/* ================= LOAD ================= */
+function gen(){
+let list=data[mode];
+let item=list[Math.floor(Math.random()*list.length)];
+
+let wrong=list
+.filter(x=>x[1]!==item[1])
+.sort(()=>Math.random()-0.5)
+.slice(0,3)
+.map(x=>x[1]);
+
+let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
+
+return {q:item[0],a:item[1],o:options};
+}
 
 function load(){
+let g=gen();
+currentAnswer=g.a;
 
-let item=data[mode][Math.floor(Math.random()*data[mode].length)];
-
-currentAnswer=item.a;
-
-document.getElementById("question").innerText=item.q;
+document.getElementById("question").innerText=g.q;
 
 let html="";
-item.o.forEach(op=>{
-html+=`<button onclick="check('${op}')">${op}</button>`;
+g.o.forEach(op=>{
+html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
 document.getElementById("options").innerHTML=html;
 }
 
-/* ================= CHECK ================= */
-
 function check(ans){
 
 if(ans===currentAnswer){
 xp+=10;
-correct++;
 document.getElementById("result").innerText="✅ Correct +10 XP";
 }else{
-document.getElementById("result").innerText="❌ Try again";
+energy-=10;
+document.getElementById("result").innerText="❌ Wrong";
+}
+
+if(energy<=0){
+alert("Game Over Restarting");
+xp=0;
+energy=100;
 }
 
 update();
 load();
 }
 
-/* ================= UPDATE ================= */
-
 function update(){
-
 document.getElementById("xp").innerText=xp;
-document.getElementById("correct").innerText=correct;
+document.getElementById("energy").innerText=energy;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
 
 document.getElementById("bar").style.width=(xp%50)*2+"%";
 }
 
+/* START */
 load();
 update();
 
