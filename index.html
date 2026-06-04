@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI</title>
+<title>SeoulQuest AI - Next Level</title>
 
 <style>
 body{
@@ -18,13 +18,13 @@ height:100vh;
 }
 
 .game{
-width:95%;
+width:92%;
 max-width:850px;
-background:#0f172a;
+background:rgba(15,23,42,0.95);
 padding:20px;
 border-radius:20px;
-border:1px solid #334155;
 text-align:center;
+border:1px solid #334155;
 }
 
 h1{color:#38bdf8;}
@@ -32,8 +32,8 @@ h1{color:#38bdf8;}
 .top{
 display:flex;
 justify-content:space-between;
-margin-bottom:10px;
 font-size:14px;
+margin-bottom:10px;
 }
 
 .bar{
@@ -42,19 +42,13 @@ height:10px;
 background:#1e293b;
 border-radius:10px;
 overflow:hidden;
-margin:10px 0;
+margin-bottom:10px;
 }
 
 .fill{
 height:100%;
 width:0%;
 background:linear-gradient(90deg,#38bdf8,#0ea5e9);
-transition:0.3s;
-}
-
-.q{
-font-size:18px;
-margin:15px 0;
 }
 
 .btn{
@@ -69,24 +63,28 @@ color:white;
 cursor:pointer;
 }
 
-.btn:hover{
-background:#2563eb;
-}
+.btn:hover{background:#2563eb;}
+
 .mode{
 display:flex;
-gap:10px;
+gap:6px;
 flex-wrap:wrap;
 justify-content:center;
 margin-bottom:10px;
 }
 
-.smallBtn{
-padding:8px 12px;
-background:#111827;
-border:1px solid #334155;
-border-radius:10px;
-cursor:pointer;
+.mode button{
+padding:8px;
+border-radius:8px;
+border:none;
+background:#334155;
 color:white;
+cursor:pointer;
+font-size:12px;
+}
+
+.mode button:hover{
+background:#2563eb;
 }
 </style>
 </head>
@@ -95,28 +93,25 @@ color:white;
 
 <div class="game">
 
-<h1>🎮 SeoulQuest AI</h1>
+<h1>🎮 SeoulQuest AI 2.0</h1>
 
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
 <div>Level: <span id="level">1</span></div>
-<div>Story: <span id="story">1</span></div>
+<div>Energy: <span id="energy">100</span></div>
 </div>
 
-<div class="bar">
-<div class="fill" id="bar"></div>
-</div>
+<div class="bar"><div class="fill" id="bar"></div></div>
 
-<!-- MODE SELECT -->
 <div class="mode">
-<button class="smallBtn" onclick="setMode('restaurant')">🍜 Restaurant</button>
-<button class="smallBtn" onclick="setMode('airport')">✈️ Airport</button>
-<button class="smallBtn" onclick="setMode('cafe')">☕ Café</button>
-<button class="smallBtn" onclick="setMode('school')">🎓 School</button>
-<button class="smallBtn" onclick="storyMode()">📖 Story Mode</button>
+<button onclick="setMode('vocab')">📘 Vocabulary</button>
+<button onclick="setMode('restaurant')">🍜 Restaurant</button>
+<button onclick="setMode('airport')">✈️ Airport</button>
+<button onclick="setMode('shopping')">🛍️ Shopping</button>
+<button onclick="setMode('story')">📖 Story Mode</button>
 </div>
 
-<div class="q" id="question">Select a mode to start</div>
+<div id="question"></div>
 <div id="options"></div>
 <div id="result"></div>
 
@@ -125,88 +120,114 @@ color:white;
 <script>
 
 let xp=0;
+let energy=100;
 let currentAnswer="";
-let mode="restaurant";
-let storyLevel=1;
+let mode="vocab";
 
-/* ================= VOCAB BY CONTEXT ================= */
-const data = {
+/* ================= BIGGER WORD BANK ================= */
 
-restaurant:[
-{q:"You enter a restaurant. How do you say Hello?",a:"안녕하세요",o:["안녕하세요","감사합니다","학교","사랑"]},
-{q:"How do you say 'Water'?",a:"물",o:["물","버스","책","집"]},
-{q:"How do you say 'Food'?",a:"음식",o:["음식","차","길","공항"]}
-],
+const vocab=[
+["Hello","안녕하세요"],
+["Good morning","좋은 아침"],
+["Good night","안녕히 주무세요"],
+["Thank you","감사합니다"],
+["Sorry","죄송합니다"],
+["Friend","친구"],
+["Love","사랑"],
+["School","학교"],
+["Food","음식"],
+["Water","물"],
+["Bus","버스"],
+["Train","기차"],
+["Airport","공항"],
+["Restaurant","식당"],
+["Order","주문"],
+["Price","가격"],
+["Ticket","표"],
+["Where","어디"],
+["When","언제"],
+["Why","왜"]
+];
 
-airport:[
-{q:"At airport, how do you say Hello?",a:"안녕하세요",o:["안녕하세요","음식","책","학교"]},
-{q:"How do you say 'Airplane'?",a:"비행기",o:["비행기","버스","시장","물"]},
-{q:"How do you say 'Airport'?",a:"공항",o:["공항","집","커피","책"]}
-],
+const restaurant=[
+["I want to order","주문하고 싶어요"],
+["Menu please","메뉴 주세요"],
+["Delicious","맛있어요"],
+["Water please","물 주세요"],
+["Bill please","계산서 주세요"]
+];
 
-cafe:[
-{q:"At café, how do you greet staff?",a:"안녕하세요",o:["안녕하세요","비행기","학교","시장"]},
-{q:"How do you say 'Coffee'?",a:"커피",o:["커피","물","집","책"]},
-{q:"How do you say 'Tea'?",a:"차",o:["차","버스","학교","길"]}
-],
+const airport=[
+["Where is airport?","공항 어디예요?"],
+["Check-in","체크인"],
+["Passport","여권"],
+["Boarding","탑승"],
+["Flight","비행기"]
+];
 
-school:[
-{q:"At school, greet teacher?",a:"안녕하세요",o:["안녕하세요","물","시장","비행기"]},
-{q:"How do you say 'Student'?",a:"학생",o:["학생","집","커피","길"]},
-{q:"How do you say 'Book'?",a:"책",o:["책","차","버스","공항"]}
-]
-};
+const shopping=[
+["How much?","얼마예요?"],
+["Too expensive","너무 비싸요"],
+["Discount","할인"],
+["Buy this","이거 사요"],
+["Cash","현금"]
+];
 
-/* ================= MODE ================= */
+/* ================= STORY ================= */
+
+const story=[
+"Chapter 1: You arrive in Seoul. Say Hello",
+"Chapter 2: You meet a Korean friend",
+"Chapter 3: You order food at a restaurant",
+"Chapter 4: You go shopping in Myeongdong"
+];
+
+let storyIndex=0;
+
+/* ================= MODE SWITCH ================= */
+
 function setMode(m){
 mode=m;
 load();
 }
 
-/* ================= STORY MODE ================= */
-function storyMode(){
+/* ================= GENERATE ================= */
 
-let stories=[
-"Chapter 1: You arrive in Seoul 🇰🇷",
-"Chapter 2: You meet a Korean friend 👋",
-"Chapter 3: You enter a café ☕",
-"Chapter 4: You travel by subway 🚇"
-];
-
-document.getElementById("question").innerText=stories[storyLevel-1];
-
-document.getElementById("options").innerHTML=`
-<button class="btn" onclick="nextStory()">Continue</button>
-`;
-
+function getBank(){
+if(mode==="restaurant") return restaurant;
+if(mode==="airport") return airport;
+if(mode==="shopping") return shopping;
+return vocab;
 }
 
-/* ================= STORY NEXT ================= */
-function nextStory(){
+/* ================= LOAD ================= */
 
-xp+=20;
-storyLevel++;
-
-if(storyLevel>4){
-storyLevel=1;
-}
-
-update();
-storyMode();
-}
-
-/* ================= LOAD QUESTION ================= */
 function load(){
 
-let list=data[mode];
-let item=list[Math.floor(Math.random()*list.length)];
+let bank=getBank();
 
-currentAnswer=item.a;
+let item=bank[Math.floor(Math.random()*bank.length)];
 
-document.getElementById("question").innerText=item.q;
+let wrong=bank.filter(x=>x[1]!=item[1])
+.sort(()=>Math.random()-0.5)
+.slice(0,3)
+.map(x=>x[1]);
+
+let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
+
+if(mode==="story"){
+document.getElementById("question").innerText=story[storyIndex];
+currentAnswer="안녕하세요";
+options=["안녕하세요","감사합니다","사랑","학교"];
+}
+else{
+document.getElementById("question").innerText=
+`What is "${item[0]}" in Korean?`;
+currentAnswer=item[1];
+}
 
 let html="";
-item.o.forEach(op=>{
+options.forEach(op=>{
 html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
@@ -214,13 +235,27 @@ document.getElementById("options").innerHTML=html;
 }
 
 /* ================= CHECK ================= */
+
 function check(ans){
 
 if(ans===currentAnswer){
 xp+=10;
 document.getElementById("result").innerText="✅ Correct +10 XP";
 }else{
+energy-=10;
 document.getElementById("result").innerText="❌ Wrong";
+}
+
+/* STORY PROGRESS */
+if(mode==="story" && ans===currentAnswer){
+storyIndex++;
+if(storyIndex>=story.length) storyIndex=0;
+}
+
+if(energy<=0){
+alert("Game Over");
+xp=0;
+energy=100;
 }
 
 update();
@@ -228,15 +263,18 @@ load();
 }
 
 /* ================= UPDATE ================= */
-function update(){
 
+function update(){
 document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
-document.getElementById("story").innerText=storyLevel;
+document.getElementById("energy").innerText=energy;
 
 let bar=(xp%50)*2;
 document.getElementById("bar").style.width=bar+"%";
 }
+
+load();
+update();
 
 </script>
 
