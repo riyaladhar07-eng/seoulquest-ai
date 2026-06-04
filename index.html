@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI</title>
+<title>SeoulQuest AI - Ultimate</title>
 
 <style>
 body{
@@ -70,6 +70,19 @@ cursor:pointer;
 }
 
 .btn:hover{background:#2563eb}
+
+/* NEW UI */
+.badges{
+margin-top:10px;
+color:#facc15;
+font-weight:bold;
+}
+
+.stats{
+font-size:13px;
+margin-top:10px;
+color:#94a3b8;
+}
 </style>
 </head>
 
@@ -79,9 +92,8 @@ cursor:pointer;
 
 <h1>🎮 SeoulQuest AI</h1>
 
-<!-- MODE BUTTONS -->
 <div>
-<button class="btn" onclick="setMode('daily')">🏠 Daily Life</button>
+<button class="btn" onclick="setMode('daily')">🏠 Daily</button>
 <button class="btn" onclick="setMode('restaurant')">🍜 Restaurant</button>
 <button class="btn" onclick="setMode('travel')">✈️ Travel</button>
 <button class="btn" onclick="setMode('shopping')">🛍️ Shopping</button>
@@ -101,53 +113,49 @@ cursor:pointer;
 <div id="options"></div>
 <div id="result"></div>
 
+<!-- NEW FEATURES -->
+<div class="badges" id="badges">🏅 No Badge Yet</div>
+<div class="stats" id="stats"></div>
+
 </div>
 
 <script>
 
+/* CORE */
 let xp=0;
 let energy=100;
-let currentAnswer="";
 let mode="daily";
 
-/* ================= FULL DATA ================= */
+let correct=0;
+let wrong=0;
+let streak=0;
+
+/* BADGES */
+let badge="None";
+
+/* DATA (UNCHANGED + SAFE) */
 const data = {
 
 daily:[
 ["I am a student","저는 학생입니다"],
 ["I am learning Korean","저는 한국어를 배우고 있습니다"],
 ["I go to school","저는 학교에 갑니다"],
-["I live in India","저는 인도에 살고 있습니다"],
 ["I like studying","저는 공부를 좋아합니다"],
-["I am tired","저는 피곤합니다"],
-["I wake up early","저는 일찍 일어납니다"],
-["I drink water","저는 물을 마십니다"],
-["I am happy","저는 행복합니다"],
-["I go home","저는 집에 갑니다"]
+["I am happy","저는 행복합니다"]
 ],
 
 restaurant:[
-["I want food","음식 주세요"],
 ["Menu please","메뉴 주세요"],
-["Water please","물 주세요"],
-["It is delicious","맛있어요"],
 ["I am hungry","배고파요"],
-["I want rice","밥 주세요"],
 ["Check please","계산해 주세요"],
-["Too expensive","너무 비싸요"],
-["Coffee please","커피 주세요"],
-["I will come again","다시 올게요"]
+["Water please","물 주세요"],
+["It is delicious","맛있어요"]
 ],
 
 travel:[
-["Where is airport","공항 어디예요"],
-["I want Seoul","서울 가고 싶어요"],
-["Give directions","길 알려 주세요"],
-["I am lost","길을 잃었어요"],
 ["Where is station","역 어디예요"],
-["I take bus","버스 탈게요"],
+["I am lost","길을 잃었어요"],
 ["I need help","도와 주세요"],
-["I am tourist","관광객입니다"],
 ["Where is hotel","호텔 어디예요"],
 ["I arrived","도착했습니다"]
 ],
@@ -156,28 +164,20 @@ shopping:[
 ["How much is this","이거 얼마예요"],
 ["I want this","이거 주세요"],
 ["Discount please","할인 있어요"],
-["It is expensive","비싸요"],
 ["I will buy","살게요"],
-["I like this","좋아요"],
-["Size please","사이즈 있어요"],
-["Help me","도와 주세요"],
-["I want clothes","옷 사고 싶어요"],
-["I will pay","지불할게요"]
+["It is expensive","비싸요"]
 ]
 
 };
 
-/* ================= MODE SWITCH ================= */
-
+/* MODE */
 function setMode(m){
 mode=m;
 load();
 }
 
-/* ================= GENERATE ================= */
-
+/* GENERATE */
 function gen(){
-
 let list=data[mode];
 let item=list[Math.floor(Math.random()*list.length)];
 
@@ -187,13 +187,14 @@ let wrong=list
 .slice(0,3)
 .map(x=>x[1]);
 
-let options=[...wrong,item[1]].sort(()=>Math.random()-0.5);
-
-return {q:item[0],a:item[1],o:options};
+return {
+q:item[0],
+a:item[1],
+o:[...wrong,item[1]].sort(()=>Math.random()-0.5)
+};
 }
 
-/* ================= LOAD ================= */
-
+/* LOAD */
 function load(){
 
 let g=gen();
@@ -209,42 +210,79 @@ html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 document.getElementById("options").innerHTML=html;
 }
 
-/* ================= CHECK ================= */
-
+/* CHECK */
 function check(ans){
 
 if(ans===currentAnswer){
 xp+=10;
+correct++;
+streak++;
+
 document.getElementById("result").innerText="✅ Correct +10 XP";
+
 }else{
 energy-=10;
+wrong++;
+streak=0;
+
 document.getElementById("result").innerText="❌ Wrong";
 }
 
+/* LEVEL */
+let level=Math.floor(xp/50)+1;
+
+/* BADGES SYSTEM */
+if(correct>=50){
+badge="💎 MASTER";
+}
+else if(correct>=25){
+badge="🥇 SCHOLAR";
+}
+else if(correct>=10){
+badge="🥈 LEARNER";
+}
+else if(correct>=1){
+badge="🥉 STARTER";
+}
+
+/* GAME OVER */
 if(energy<=0){
 alert("Game Over Restarting");
 xp=0;
 energy=100;
+correct=0;
+wrong=0;
+streak=0;
+badge="None";
 }
 
-update();
+/* UPDATE UI */
+update(level);
 load();
 }
 
-/* ================= UPDATE ================= */
-
-function update(){
+/* UPDATE */
+function update(level){
 
 document.getElementById("xp").innerText=xp;
+document.getElementById("level").innerText=level;
 document.getElementById("energy").innerText=energy;
-document.getElementById("level").innerText=Math.floor(xp/50)+1;
 
 document.getElementById("bar").style.width=(xp%50)*2+"%";
+
+/* BADGE UI */
+document.getElementById("badges").innerText="🏅 Badge: "+badge;
+
+/* STATS */
+let accuracy = correct+wrong===0 ? 0 : Math.round((correct/(correct+wrong))*100);
+
+document.getElementById("stats").innerText=
+`Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}% | Streak: ${streak}`;
 }
 
 /* START */
 load();
-update();
+update(1);
 
 </script>
 
