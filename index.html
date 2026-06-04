@@ -29,52 +29,11 @@ border:1px solid #334155;
 
 h1{color:#38bdf8;}
 
-/* CHAT */
-#chatBox{
-margin-bottom:15px;
-}
-
-#userInput{
-width:65%;
-padding:10px;
-border-radius:10px;
-border:none;
-}
-
-#askBtn{
-padding:10px;
-border:none;
-border-radius:10px;
-background:#38bdf8;
-cursor:pointer;
-}
-
-/* TOP */
 .top{
 display:flex;
 justify-content:space-between;
 font-size:14px;
-margin-top:10px;
-}
-
-.bar{
-width:100%;
-height:10px;
-background:#1e293b;
-border-radius:10px;
-overflow:hidden;
 margin:10px 0;
-}
-
-.fill{
-height:100%;
-width:0%;
-background:#38bdf8;
-}
-
-.q{
-font-size:20px;
-margin:15px 0;
 }
 
 .btn{
@@ -93,9 +52,14 @@ cursor:pointer;
 background:#2563eb;
 }
 
+#box{
+margin-top:10px;
+}
+
 #result{
 margin-top:10px;
 min-height:20px;
+color:#67e8f9;
 }
 </style>
 </head>
@@ -106,108 +70,85 @@ min-height:20px;
 
 <h1>🎮 SeoulQuest AI</h1>
 
-<!-- AI CHAT -->
-<div id="chatBox">
-<input id="userInput" placeholder="Ask Riya in English...">
-<button id="askBtn" onclick="askRiya()">Ask</button>
-<div id="chatResponse" style="margin-top:10px;color:#67e8f9;"></div>
-</div>
-
 <div class="top">
 <div>XP: <span id="xp">0</span></div>
 <div>Level: <span id="level">1</span></div>
 <div>Energy: <span id="energy">100</span></div>
 </div>
 
-<div class="bar"><div class="fill" id="bar"></div></div>
+<h3>🎭 Role Play Mode</h3>
 
-<div id="question" class="q"></div>
-<div id="options"></div>
+<div id="box"></div>
+
 <div id="result"></div>
 
 </div>
 
 <script>
 
-/* ================= CORE ================= */
 let xp=0;
 let energy=100;
-let chapter=1;
-let qIndex=0;
-let currentAnswer="";
+let currentScenario="";
 
-/* ================= AI CHAT ================= */
-function askRiya(){
+/* ================= SCENARIOS ================= */
 
-let input=document.getElementById("userInput").value.toLowerCase();
-let res="";
+const scenarios={
 
-if(input.includes("hello")){
-res="안녕하세요 (Annyeonghaseyo) = Hello";
-}
-else if(input.includes("thank")){
-res="감사합니다 (Gamsahamnida) = Thank you";
-}
-else if(input.includes("i am student")){
-res="저는 학생입니다 (Jeoneun haksaengimnida) = I am a student";
-}
-else if(input.includes("how are you")){
-res="잘 지내요 (Jal jinaeyo) = I am fine";
-}
-else if(input.includes("love")){
-res="사랑 (Sarang) = Love";
-}
-else{
-res="🤖 Try: hello, thank you, I am student";
-}
+airport:{
+q:"✈️ You arrive in Korea. How do you say: 'Hello'?",
+options:["안녕하세요","감사합니다","학교","사랑"],
+answer:"안녕하세요"
+},
 
-document.getElementById("chatResponse").innerText=res;
+restaurant:{
+q:"🍜 You want food. How do you say 'Thank you'?",
+options:["감사합니다","안녕하세요","집","물"],
+answer:"감사합니다"
+},
+
+friend:{
+q:"👋 You meet a Korean friend. How do you say 'I am a student'?",
+options:["저는 학생입니다","나는 밥","서울","친구"],
+answer:"저는 학생입니다"
+},
+
+shopping:{
+q:"🛍️ In a shop, how do you say 'Hello'?",
+options:["안녕하세요","사랑","학교","물"],
+answer:"안녕하세요"
 }
 
-/* ================= STORY MODE ================= */
+};
 
-const story=[
-[
-{q:"Chapter 1: How do you say Hello?",a:"안녕하세요",o:["안녕하세요","감사합니다","사랑","학교"]},
-{q:"How do you say Thank you?",a:"감사합니다",o:["감사합니다","안녕","집","물"]}
-],
+/* ================= LOAD MENU ================= */
 
-[
-{q:"Chapter 2: What is School?",a:"학교",o:["학교","집","차","물"]},
-{q:"What is Book?",a:"책",o:["책","문","길","사람"]}
-],
+function menu(){
 
-[
-{q:"Chapter 3: What is Friend?",a:"친구",o:["친구","학교","집","차"]},
-{q:"What is Love?",a:"사랑",o:["사랑","물","길","문"]}
-],
+document.getElementById("box").innerHTML=`
 
-[
-{q:"Final Chapter: What is Seoul?",a:"서울",o:["서울","도쿄","뉴욕","베이징"]}
-]
-];
+<button class="btn" onclick="start('airport')">✈️ Airport</button>
+<button class="btn" onclick="start('restaurant')">🍜 Restaurant</button>
+<button class="btn" onclick="start('friend')">👋 Meet Friend</button>
+<button class="btn" onclick="start('shopping')">🛍️ Shopping</button>
 
-/* ================= LOAD ================= */
+`;
 
-function load(){
-
-if(chapter>story.length){
-document.getElementById("question").innerHTML="🎉 ALL CHAPTERS COMPLETE!";
-document.getElementById("options").innerHTML="";
-return;
 }
 
-let data=story[chapter-1][qIndex];
+function start(type){
 
-document.getElementById("question").innerText=data.q;
-currentAnswer=data.a;
+currentScenario=type;
 
-let html="";
-data.o.forEach(op=>{
+let s=scenarios[type];
+
+let html=`<h3>${s.q}</h3>`;
+
+s.options.forEach(op=>{
 html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
-document.getElementById("options").innerHTML=html;
+document.getElementById("box").innerHTML=html;
+document.getElementById("result").innerText="";
 
 }
 
@@ -215,23 +156,25 @@ document.getElementById("options").innerHTML=html;
 
 function check(ans){
 
-if(ans===currentAnswer){
+let correct=scenarios[currentScenario].answer;
+
+if(ans===correct){
+
 xp+=10;
 document.getElementById("result").innerText="✅ Correct +10 XP";
+
 }else{
+
 energy-=10;
-document.getElementById("result").innerText="❌ Wrong";
-}
+document.getElementById("result").innerText="❌ Wrong -10 Energy";
 
-qIndex++;
-
-if(qIndex>=story[chapter-1].length){
-chapter++;
-qIndex=0;
 }
 
 update();
-load();
+
+/* back to menu */
+setTimeout(menu,1200);
+
 }
 
 /* ================= UI ================= */
@@ -242,11 +185,10 @@ document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
 document.getElementById("energy").innerText=energy;
 
-document.getElementById("bar").style.width=(xp%50)*2+"%";
 }
 
 /* START */
-load();
+menu();
 update();
 
 </script>
