@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SeoulQuest AI</title>
+<title>SeoulQuest AI Ultimate</title>
 
 <style>
 body{
@@ -14,12 +14,12 @@ color:white;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
+min-height:100vh;
 }
 
 .game{
 width:92%;
-max-width:850px;
+max-width:900px;
 background:rgba(15,23,42,0.95);
 padding:20px;
 border-radius:20px;
@@ -28,13 +28,6 @@ border:1px solid #334155;
 }
 
 h1{color:#38bdf8;}
-
-.top{
-display:flex;
-justify-content:space-between;
-font-size:14px;
-margin:10px 0;
-}
 
 .btn{
 display:block;
@@ -46,23 +39,30 @@ border-radius:10px;
 background:#1e293b;
 color:white;
 cursor:pointer;
-transition:0.2s;
 }
 
-.btn:hover{
-background:#2563eb;
+.btn:hover{background:#2563eb;}
+
+#box,#chat{
+margin-top:10px;
 }
 
-#box{margin-top:10px;}
-#result{margin-top:10px;min-height:20px;color:#67e8f9;}
+input{
+width:100%;
+padding:10px;
+border-radius:10px;
+border:none;
+margin-top:10px;
+}
 
 .panel{
-margin-top:10px;
+margin-top:15px;
 font-size:13px;
-color:#a5b4fc;
+color:#93c5fd;
 border-top:1px solid #334155;
 padding-top:10px;
 }
+
 .badge{
 display:inline-block;
 padding:5px 10px;
@@ -78,25 +78,33 @@ font-size:12px;
 
 <div class="game">
 
-<h1>🎮 SeoulQuest AI Pro</h1>
+<h1>🎮 SeoulQuest AI Ultimate</h1>
 
-<div class="top">
-<div>XP: <span id="xp">0</span></div>
-<div>Level: <span id="level">1</span></div>
-<div>Energy: <span id="energy">100</span></div>
+<div class="panel">
+XP: <span id="xp">0</span> |
+Level: <span id="level">1</span> |
+Energy: <span id="energy">100</span>
 </div>
 
-<h3>🎭 Role Play Mode</h3>
+<h3>Choose Mode</h3>
 
 <div id="box"></div>
+
+<div id="chat"></div>
+
+<input id="input" placeholder="Ask Riya or type..." />
+
+<button class="btn" onclick="askRiya()">🤖 Ask Riya</button>
+
 <div id="result"></div>
 
 <div class="panel">
 <h4>🏆 Achievements</h4>
 <div id="badges"></div>
 
-<p>✔ Correct: <span id="correct">0</span> | ❌ Wrong: <span id="wrong">0</span></p>
-<p>🎯 Accuracy: <span id="accuracy">0</span>%</p>
+<p>Correct: <span id="correct">0</span> |
+Wrong: <span id="wrong">0</span> |
+Accuracy: <span id="acc">0</span>%</p>
 </div>
 
 </div>
@@ -104,75 +112,62 @@ font-size:12px;
 <script>
 
 /* CORE */
-let xp=0;
-let energy=100;
-let currentScenario="";
-let currentIndex=0;
-
-let correct=0;
-let wrong=0;
+let xp=0,energy=100,correct=0,wrong=0;
 let badges=[];
 
-/* BADGE SYSTEM */
-function addBadge(name){
-if(!badges.includes(name)){
-badges.push(name);
-}
-renderBadges();
-}
-
-function renderBadges(){
-document.getElementById("badges").innerHTML =
-badges.map(b=>`<span class="badge">${b}</span>`).join("");
-}
-
 /* SCENARIOS */
-const scenarios={
+const roles={
 airport:[
-{q:"✈️ Officer: Name?",options:["저는 리야입니다","감사합니다","안녕하세요","물"],answer:"저는 리야입니다"},
-{q:"✈️ Where going?",options:["한국에 갑니다","학교","사랑","책"],answer:"한국에 갑니다"},
-{q:"✈️ Passport?",options:["여기 있습니다","친구","커피","집"],answer:"여기 있습니다"}
+{q:"✈️ Name?",o:["저는 리야입니다","안녕하세요","물","학교"],a:"저는 리야입니다"},
+{q:"✈️ Where?",o:["한국에 갑니다","책","커피","친구"],a:"한국에 갑니다"}
 ],
 restaurant:[
-{q:"🍜 Order food",options:["비빔밥 주세요","안녕하세요","학교","물"],answer:"비빔밥 주세요"},
-{q:"🍜 Drink?",options:["물 주세요","책","서울","게임"],answer:"물 주세요"},
-{q:"🍜 Taste?",options:["맛있었습니다","친구","학교","안녕"],answer:"맛있었습니다"}
+{q:"🍜 Order?",o:["비빔밥 주세요","학교","물","게임"],a:"비빔밥 주세요"},
+{q:"🍜 Drink?",o:["물 주세요","책","서울","친구"],a:"물 주세요"}
 ],
 friend:[
-{q:"👋 Name?",options:["저는 리야입니다","물","학교","서울"],answer:"저는 리야입니다"},
-{q:"👋 From?",options:["인도에서 왔어요","비빔밥","책","커피"],answer:"인도에서 왔어요"},
-{q:"👋 Nice meet?",options:["만나서 반갑습니다","학교","물","게임"],answer:"만나서 반갑습니다"}
+{q:"👋 Name?",o:["저는 리야입니다","물","학교","서울"],a:"저는 리야입니다"},
+{q:"👋 Meet?",o:["만나서 반갑습니다","게임","물","책"],a:"만나서 반갑습니다"}
 ],
 shopping:[
-{q:"🛍️ Price?",options:["이거 얼마예요?","안녕하세요","학교","물"],answer:"이거 얼마예요?"},
-{q:"🛍️ Pay",options:["여기요","책","서울","친구"],answer:"여기요"},
-{q:"🛍️ Thanks",options:["감사합니다","학교","물","게임"],answer:"감사합니다"}
+{q:"🛍️ Price?",o:["이거 얼마예요?","학교","물","친구"],a:"이거 얼마예요?"}
 ]
 };
 
+let mode="";
+let i=0;
+
+/* BADGES */
+function addBadge(b){
+if(!badges.includes(b)) badges.push(b);
+document.getElementById("badges").innerHTML =
+badges.map(x=>`<span class="badge">${x}</span>`).join("");
+}
+
 /* MENU */
 function menu(){
-currentIndex=0;
 document.getElementById("box").innerHTML=`
 <button class="btn" onclick="start('airport')">✈️ Airport</button>
 <button class="btn" onclick="start('restaurant')">🍜 Restaurant</button>
 <button class="btn" onclick="start('friend')">👋 Friend</button>
 <button class="btn" onclick="start('shopping')">🛍️ Shopping</button>
+<button class="btn" onclick="story()">📖 Story Mode</button>
 `;
+document.getElementById("chat").innerHTML="";
 }
 
-/* START */
-function start(type){
-currentScenario=type;
-currentIndex=0;
+/* START ROLE */
+function start(m){
+mode=m;
+i=0;
 load();
 }
 
 /* LOAD */
 function load(){
-let s=scenarios[currentScenario][currentIndex];
+let s=roles[mode][i];
 let html=`<h3>${s.q}</h3>`;
-s.options.forEach(op=>{
+s.o.forEach(op=>{
 html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 document.getElementById("box").innerHTML=html;
@@ -180,31 +175,77 @@ document.getElementById("box").innerHTML=html;
 
 /* CHECK */
 function check(ans){
-let s=scenarios[currentScenario][currentIndex];
+let s=roles[mode][i];
 
-if(ans===s.answer){
+if(ans===s.a){
 xp+=10;
 correct++;
-
 if(correct===1) addBadge("🥇 First Win");
 if(correct===5) addBadge("⚡ Fast Learner");
-if(correct===10) addBadge("🎭 Role Master");
-
-document.getElementById("result").innerText="✅ Correct +10 XP";
 }else{
 energy-=10;
 wrong++;
-document.getElementById("result").innerText="❌ Wrong";
 }
 
-currentIndex++;
+i++;
 update();
 
-setTimeout(()=>{
-if(currentIndex>=scenarios[currentScenario].length){
+if(i>=roles[mode].length){
 menu();
 }else load();
-},900);
+}
+
+/* STORY MODE */
+function story(){
+document.getElementById("box").innerHTML=`
+<h3>📖 Chapter 1: Arrive in Seoul</h3>
+<button class="btn" onclick="nextStory()">Next</button>
+`;
+}
+
+let chapter=1;
+
+function nextStory(){
+chapter++;
+
+if(chapter===2){
+document.getElementById("box").innerHTML=
+"<h3>👋 Meet a Friend</h3><p>안녕하세요 = Hello</p>";
+}
+else if(chapter===3){
+document.getElementById("box").innerHTML=
+"<h3>🍜 Restaurant</h3><p>비빔밥 주세요 = Bibimbap please</p>";
+}
+else{
+document.getElementById("box").innerHTML=
+"<h3>🎉 Story Completed!</h3>";
+}
+}
+
+/* RIYA CHAT */
+function askRiya(){
+let text=document.getElementById("input").value.toLowerCase();
+let chat=document.getElementById("chat");
+
+chat.innerHTML+=`<div>👤 You: ${text}</div>`;
+
+let res="";
+
+if(text.includes("hello")){
+res="안녕하세요 = Hello 👋";
+}
+else if(text.includes("hungry")){
+res="배고파요 = I am hungry 🍜";
+}
+else if(text.includes("name")){
+res="저는 리야입니다 = I am Riya 🤖";
+}
+else{
+res="Try: hello, name, hungry 😊";
+}
+
+chat.innerHTML+=`<div>🤖 Riya: ${res}</div>`;
+document.getElementById("input").value="";
 }
 
 /* UPDATE */
@@ -213,13 +254,12 @@ document.getElementById("xp").innerText=xp;
 document.getElementById("level").innerText=Math.floor(xp/50)+1;
 document.getElementById("energy").innerText=energy;
 
-let acc = correct+wrong===0?0:Math.round((correct/(correct+wrong))*100);
-
 document.getElementById("correct").innerText=correct;
 document.getElementById("wrong").innerText=wrong;
-document.getElementById("accuracy").innerText=acc;
 
-renderBadges();
+let total=correct+wrong;
+let acc=total?Math.round((correct/total)*100):0;
+document.getElementById("acc").innerText=acc;
 }
 
 /* START */
@@ -230,4 +270,3 @@ update();
 
 </body>
 </html>
-
