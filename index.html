@@ -46,10 +46,12 @@ border-radius:10px;
 background:#1e293b;
 color:white;
 cursor:pointer;
+transition:0.2s;
 }
 
 .btn:hover{
 background:#2563eb;
+transform:scale(1.02);
 }
 
 #box{
@@ -79,101 +81,162 @@ color:#67e8f9;
 <h3>🎭 Role Play Mode</h3>
 
 <div id="box"></div>
-
 <div id="result"></div>
 
 </div>
 
 <script>
 
-let xp=0;
-let energy=100;
-let currentScenario="";
+/* ================= CORE ================= */
+let xp = 0;
+let energy = 100;
+let currentScenario = "";
+let currentIndex = 0;
 
 /* ================= SCENARIOS ================= */
 
-const scenarios={
+const scenarios = {
 
-airport:{
-q:"✈️ You arrive in Korea. How do you say: 'Hello'?",
-options:["안녕하세요","감사합니다","학교","사랑"],
-answer:"안녕하세요"
+airport: [
+{
+q: "✈️ Airport: Officer asks → 'What is your name?'",
+options: ["저는 리야입니다", "감사합니다", "안녕하세요", "물"],
+answer: "저는 리야입니다"
 },
-
-restaurant:{
-q:"🍜 You want food. How do you say 'Thank you'?",
-options:["감사합니다","안녕하세요","집","물"],
-answer:"감사합니다"
+{
+q: "✈️ Officer: 'Where are you going?'",
+options: ["한국에 갑니다", "학교", "사랑", "커피"],
+answer: "한국에 갑니다"
 },
-
-friend:{
-q:"👋 You meet a Korean friend. How do you say 'I am a student'?",
-options:["저는 학생입니다","나는 밥","서울","친구"],
-answer:"저는 학생입니다"
-},
-
-shopping:{
-q:"🛍️ In a shop, how do you say 'Hello'?",
-options:["안녕하세요","사랑","학교","물"],
-answer:"안녕하세요"
+{
+q: "✈️ Officer: 'Show your passport'",
+options: ["여기 있습니다", "안녕하세요", "친구", "책"],
+answer: "여기 있습니다"
 }
+],
+
+restaurant: [
+{
+q: "🍜 Waiter: 'What would you like to order?'",
+options: ["비빔밥 주세요", "안녕하세요", "학교 갑니다", "친구"],
+answer: "비빔밥 주세요"
+},
+{
+q: "🍜 Waiter: 'Drink?'",
+options: ["물 주세요", "책", "서울", "게임"],
+answer: "물 주세요"
+},
+{
+q: "🍜 After eating: 'It was delicious'",
+options: ["맛있었습니다", "감사합니다", "안녕하세요", "학교"],
+answer: "맛있었습니다"
+}
+],
+
+friend: [
+{
+q: "👋 Friend: 'Hi! What is your name?'",
+options: ["저는 리야입니다", "감사합니다", "물", "학교"],
+answer: "저는 리야입니다"
+},
+{
+q: "👋 Friend: 'Where are you from?'",
+options: ["인도에서 왔어요", "비빔밥", "책", "서울"],
+answer: "인도에서 왔어요"
+},
+{
+q: "👋 Friend: 'Nice to meet you!'",
+options: ["만나서 반갑습니다", "물 주세요", "학교", "커피"],
+answer: "만나서 반갑습니다"
+}
+],
+
+shopping: [
+{
+q: "🛍️ Shop: 'How can I help you?'",
+options: ["이거 얼마예요?", "안녕하세요", "학교", "물"],
+answer: "이거 얼마예요?"
+},
+{
+q: "🛍️ Shop: '10,000 won'",
+options: ["여기요", "친구", "서울", "책"],
+answer: "여기요"
+},
+{
+q: "🛍️ After buying?",
+options: ["감사합니다", "학교", "커피", "집"],
+answer: "감사합니다"
+}
+]
 
 };
 
-/* ================= LOAD MENU ================= */
+/* ================= MENU ================= */
 
 function menu(){
+currentIndex = 0;
 
-document.getElementById("box").innerHTML=`
-
+document.getElementById("box").innerHTML = `
 <button class="btn" onclick="start('airport')">✈️ Airport</button>
 <button class="btn" onclick="start('restaurant')">🍜 Restaurant</button>
-<button class="btn" onclick="start('friend')">👋 Meet Friend</button>
+<button class="btn" onclick="start('friend')">👋 Friend</button>
 <button class="btn" onclick="start('shopping')">🛍️ Shopping</button>
-
 `;
 
+document.getElementById("result").innerText = "";
 }
 
+/* ================= START ================= */
+
 function start(type){
+currentScenario = type;
+currentIndex = 0;
+load();
+}
 
-currentScenario=type;
+/* ================= LOAD ================= */
 
-let s=scenarios[type];
+function load(){
 
-let html=`<h3>${s.q}</h3>`;
+let s = scenarios[currentScenario][currentIndex];
+
+let html = `<h3>${s.q}</h3>`;
 
 s.options.forEach(op=>{
-html+=`<button class="btn" onclick="check('${op}')">${op}</button>`;
+html += `<button class="btn" onclick="check('${op}')">${op}</button>`;
 });
 
-document.getElementById("box").innerHTML=html;
-document.getElementById("result").innerText="";
-
+document.getElementById("box").innerHTML = html;
+document.getElementById("result").innerText = "";
 }
 
 /* ================= CHECK ================= */
 
 function check(ans){
 
-let correct=scenarios[currentScenario].answer;
+let s = scenarios[currentScenario][currentIndex];
 
-if(ans===correct){
-
-xp+=10;
-document.getElementById("result").innerText="✅ Correct +10 XP";
-
-}else{
-
-energy-=10;
-document.getElementById("result").innerText="❌ Wrong -10 Energy";
-
+if(ans === s.answer){
+xp += 10;
+document.getElementById("result").innerText = "✅ Correct +10 XP";
+} else {
+energy -= 10;
+document.getElementById("result").innerText = "❌ Wrong -10 Energy";
 }
 
 update();
 
-/* back to menu */
-setTimeout(menu,1200);
+currentIndex++;
+
+setTimeout(()=>{
+
+if(currentIndex >= scenarios[currentScenario].length){
+menu();
+} else {
+load();
+}
+
+},1000);
 
 }
 
@@ -181,9 +244,9 @@ setTimeout(menu,1200);
 
 function update(){
 
-document.getElementById("xp").innerText=xp;
-document.getElementById("level").innerText=Math.floor(xp/50)+1;
-document.getElementById("energy").innerText=energy;
+document.getElementById("xp").innerText = xp;
+document.getElementById("level").innerText = Math.floor(xp/50)+1;
+document.getElementById("energy").innerText = energy;
 
 }
 
